@@ -1,0 +1,119 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>내 배포 도구 모음</title>
+<style>
+  :root{
+    --bg:#0f1420; --card:#1a2130; --card2:#222c40; --line:#2c3852;
+    --tx:#eef2fb; --dim:#9aa7c2; --accent:#5b8cff; --accent2:#38d39f;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f3f5fb; --card:#ffffff; --card2:#f7f9ff; --line:#e3e8f4;
+           --tx:#1a2233; --dim:#5c6a86; --accent:#3565e6; --accent2:#12a97a; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--tx);
+    font-family:"Pretendard","Segoe UI",system-ui,-apple-system,sans-serif;
+    line-height:1.5;-webkit-text-size-adjust:100%}
+  .wrap{max-width:920px;margin:0 auto;padding:28px 18px 60px}
+  header{margin:8px 0 26px}
+  h1{font-size:26px;margin:0 0 6px;letter-spacing:-.02em}
+  .sub{color:var(--dim);font-size:14px}
+  .cat{margin:30px 0 12px;font-size:13px;font-weight:700;letter-spacing:.04em;
+    color:var(--accent);text-transform:uppercase}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}
+  a.card{display:block;text-decoration:none;color:inherit;background:var(--card);
+    border:1px solid var(--line);border-radius:14px;padding:15px 16px;
+    transition:transform .12s ease,border-color .12s ease,background .12s ease}
+  a.card:hover{transform:translateY(-2px);border-color:var(--accent);background:var(--card2)}
+  .name{font-size:16px;font-weight:700;margin:0 0 4px;display:flex;align-items:center;gap:8px}
+  .emoji{font-size:18px}
+  .desc{color:var(--dim);font-size:13px;margin:0}
+  .url{color:var(--accent);font-size:11.5px;margin-top:9px;word-break:break-all;opacity:.85}
+  .note{margin-top:34px;padding:14px 16px;background:var(--card);border:1px dashed var(--line);
+    border-radius:12px;color:var(--dim);font-size:13px}
+  footer{margin-top:34px;color:var(--dim);font-size:12px;text-align:center}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>🔗 내 배포 도구 모음</h1>
+    <div class="sub">GitHub Pages로 배포한 교육·업무 도구 모음 · 카드를 누르면 바로 열립니다</div>
+  </header>
+  <div id="app"></div>
+  <div class="note">
+    ℹ️ <b>폰↔PC 원격제어</b>(phone-pc-remote)는 비공개 저장소 + Render 서비스로 운영되어
+    이 목록에는 넣지 않았어요. <b>tech</b> 저장소는 아직 Pages 배포가 없습니다.
+  </div>
+  <footer>GitHub: hongyul67-cpu</footer>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════════
+   ▼▼▼ 새 도구를 추가하려면 아래 목록에 한 줄만 넣으면 됩니다 ▼▼▼
+
+   형식:  { emoji:"🙂", name:"도구 이름", desc:"한 줄 설명",
+            repo:"저장소이름", cat:"분류" }
+
+   · repo   : GitHub 저장소 이름만 적으면 링크가 자동으로 만들어져요.
+              (예: "vacation-schedule" → hongyul67-cpu.github.io/vacation-schedule)
+              전혀 다른 주소면 repo 대신  url:"https://..."  를 적어도 됩니다.
+   · cat    : 같은 분류끼리 자동으로 묶이고, 아래 CATEGORIES 순서대로 나와요.
+              새 분류를 쓰고 싶으면 CATEGORIES 목록에도 이름을 추가하세요.
+   ══════════════════════════════════════════════════════════════════ */
+
+const GH_USER = "hongyul67-cpu";   // GitHub 아이디 (Pages 링크 자동 생성용)
+
+const CATEGORIES = [
+  "자동화설비 · 기계 학습",
+  "학생 진단 · 평가",
+  "교사 업무 도구",
+];
+
+const TOOLS = [
+  { emoji:"📝", name:"자동화설비기능사 필기 CBT", desc:"18회차 1080문항 · 모의고사 · 과목별 학습 · 오답노트", repo:"automation-equipment-exam", cat:"자동화설비 · 기계 학습" },
+  { emoji:"📐", name:"자동화설비기능사 실기 도면게임", desc:"공개도면 문제게임 3모드(해독·3D매칭·치수찾기) + 편집기", repo:"automation-practical-exam", cat:"자동화설비 · 기계 학습" },
+  { emoji:"🔍", name:"도면읽기 마스터", desc:"선의 종류 · 치수 읽기 · 기계요소 약도 + 종합시험", repo:"domyeon-master", cat:"자동화설비 · 기계 학습" },
+  { emoji:"⚡", name:"시퀀스 · PLC 학습 게임", desc:"자동화설비 기능사 대비 시퀀스 · PLC 개념 + 게임", repo:"sequence-plc-master", cat:"자동화설비 · 기계 학습" },
+  { emoji:"🧊", name:"단면도 익스플로러", desc:"기계 부품 단면도 원리를 3D로 체험 (SolidWorks 입문 전)", repo:"section-view-explorer", cat:"자동화설비 · 기계 학습" },
+  { emoji:"🧩", name:"블록 뷰 매칭", desc:"정투상도(투상도) 연습 문제", repo:"block-view-matching", cat:"자동화설비 · 기계 학습" },
+  { emoji:"🖨️", name:"3D프린터운용기능사 필기", desc:"개념 + 기출 92문항 · 오답노트 학습게임", repo:"3dprinter-master", cat:"자동화설비 · 기계 학습" },
+
+  { emoji:"📊", name:"기초학력 진단 도구", desc:"중학생 국·영·수 60문항 채점 + 결과 이미지 출력", repo:"gicho-hakryeok-master", cat:"학생 진단 · 평가" },
+
+  { emoji:"✍️", name:"생기부 문장 생성기", desc:"행동특성 · 세부능력특기사항 문장 생성", repo:"saenggibu-generator", cat:"교사 업무 도구" },
+  { emoji:"🤖", name:"실습과제 도구 모음", desc:"과제 양식 만들기 · 과제 목록 · 채점(교사용) · 제출 도구", repo:"ai-task-tools", cat:"교사 업무 도구" },
+  { emoji:"💬", name:"상담 일지 도구", desc:"상담 내용 기록 · 관리", repo:"counseling", cat:"교사 업무 도구" },
+  { emoji:"🏫", name:"사회생활 수업 학습 도구", desc:"사회생활 수업용 학습 도구 모음", repo:"social-life-tools", cat:"교사 업무 도구" },
+  { emoji:"📅", name:"방학 시간표 관리", desc:"방학 계획 · 시간표 관리 웹앱", repo:"vacation-schedule", cat:"교사 업무 도구" },
+
+  /* ▼ 새 도구는 이 아래에 한 줄씩 추가하세요 ▼ */
+
+];
+
+/* ── 여기부터는 건드릴 필요 없어요 (카드 자동 생성) ────────────────── */
+function linkOf(t){ return t.url || `https://${GH_USER}.github.io/${t.repo}/`; }
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+const app = document.getElementById("app");
+const cats = CATEGORIES.slice();
+// CATEGORIES에 없는 분류가 있으면 뒤에 자동으로 붙여줌
+TOOLS.forEach(t => { if(t.cat && !cats.includes(t.cat)) cats.push(t.cat); });
+
+cats.forEach(cat => {
+  const items = TOOLS.filter(t => (t.cat||"기타") === cat);
+  if(!items.length) return;
+  const h = document.createElement("div");
+  h.className = "cat";
+  h.textContent = cat;
+  app.appendChild(h);
+  const grid = document.createElement("div");
+  grid.className = "grid";
+  grid.innerHTML = items.map(t => `
+    <a class="card" href="${esc(linkOf(t))}">
+      <p class="name"><span class="emoji">${esc(t.emoji||"🔗")}</span>${esc(t.name)}</p>
+      <p class="desc">${esc(t.desc||"")}</p>
+      <div class="url">${esc(t.repo || linkOf(t))}</div>
+    </a>`).join("");
+  app.appendChild(grid);
+});
+</script>
