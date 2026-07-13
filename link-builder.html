@@ -94,6 +94,8 @@
     </div>
 
     <label class="chk"><input id="name" type="checkbox"> 이름도 입력받기 <span class="hint">번호만으로 충분하면 꺼두세요</span></label>
+    <label class="chk"><input id="ckGrade" type="checkbox"> 학년도 입력받기 <span class="hint">여러 학년이 섞일 때</span></label>
+    <label class="chk"><input id="ckDept" type="checkbox"> 학과도 입력받기 <span class="hint">여러 학과가 섞일 때</span></label>
 
     <details>
       <summary>처음이신가요? — 내 시트 만들고 주소 얻는 법 (5분)</summary>
@@ -134,11 +136,11 @@
   // ── 담당자(제작자)가 관리: 결과수집이 적용된 도구 목록 ──
   // 새 도구를 추가하면 여기 한 줄만 넣으면 됩니다.
   var TOOLS = [
-    { name: '자동화설비 필기 기출앱', url: 'https://hongyul67-cpu.github.io/automation-equipment-exam/' },
-    { name: '3D프린터 마스터',       url: 'https://hongyul67-cpu.github.io/3dprinter-master/' },
-    { name: '기초학력 진단',          url: 'https://hongyul67-cpu.github.io/gicho-hakryeok-master/' },
-    { name: '도면읽기 마스터',        url: 'https://hongyul67-cpu.github.io/domyeon-master/' },
-    { name: '시퀀스·PLC 마스터',      url: 'https://hongyul67-cpu.github.io/sequence-plc-master/' }
+    { name: '자동화설비 필기 기출앱',   url: 'https://hongyul67-cpu.github.io/automation-equipment-exam/' },
+    { name: '자동화설비 실기 도면게임', url: 'https://hongyul67-cpu.github.io/automation-practical-exam/' },
+    { name: '도면읽기 마스터',          url: 'https://hongyul67-cpu.github.io/domyeon-master/' },
+    { name: '기초학력 진단',            url: 'https://hongyul67-cpu.github.io/gicho-hakryeok-master/' },
+    { name: '3D프린터 마스터',          url: 'https://hongyul67-cpu.github.io/3dprinter-master/' }
   ];
 
   var elUrl = document.getElementById('url');
@@ -146,6 +148,8 @@
   var elFixCls = document.getElementById('fixcls');
   var elMax = document.getElementById('max');
   var elName = document.getElementById('name');
+  var elGrade = document.getElementById('ckGrade');
+  var elDept = document.getElementById('ckDept');
   var elWarn = document.getElementById('warn');
   var elTools = document.getElementById('tools');
   var gradeField = document.getElementById('gradeField');
@@ -169,6 +173,8 @@
     }
     if (max && max !== '40') q += '&max=' + encodeURIComponent(max);
     if (elName.checked) q += '&name=1';
+    if (elGrade.checked) q += '&grade=1';
+    if (elDept.checked) q += '&dept=1';
     return q;
   }
 
@@ -261,6 +267,8 @@
 
   [elUrl, elCls, elFixCls, elMax].forEach(function (el) { el.addEventListener('input', render); });
   elName.addEventListener('change', render);
+  elGrade.addEventListener('change', render);
+  elDept.addEventListener('change', render);
   Array.prototype.forEach.call(document.querySelectorAll('input[name="mode"]'), function (r) {
     r.addEventListener('change', render);
   });
