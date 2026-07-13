@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>result-collector 데모</title>
+<style>
+  body{font-family:system-ui,"Malgun Gothic",sans-serif;max-width:640px;margin:40px auto;padding:0 16px;color:#0f172a}
+  h1{font-size:20px}
+  .card{border:1px solid #e2e8f0;border-radius:12px;padding:18px;margin:16px 0}
+  button.go{background:#6366f1;color:#fff;border:0;border-radius:10px;padding:12px 18px;font-size:15px;font-weight:700;cursor:pointer}
+  pre{background:#0f172a;color:#a5f3fc;padding:12px;border-radius:10px;overflow:auto;font-size:12px}
+  .lbl{font-size:12px;color:#64748b}
+</style>
+</head>
+<body>
+  <h1>result-collector 데모 (모의 전송)</h1>
+  <p class="lbl">아래 버튼을 누르면 실제 도구에서 채점이 끝난 상황을 흉내냅니다. 실제 서버 대신 전송 내용을 아래에 표시합니다.</p>
+
+  <div class="card">
+    <button class="go" id="finish">시험 채점 완료 → 결과 제출하기</button>
+  </div>
+
+  <div class="card">
+    <div class="lbl">마지막으로 시트에 전송된 내용:</div>
+    <pre id="out">아직 없음</pre>
+  </div>
+
+  <!-- 실제 도구에선 이 script 한 줄만 넣으면 됩니다 (endpoint만 진짜 URL로) -->
+  <script src="./collector.js"
+          data-endpoint="MOCK"
+          data-tool="자동화설비 필기(데모)"
+          data-classes="1,2,3,4,5"
+          data-max-num="40"></script>
+
+  <script>
+    // ── 데모용: fetch를 가로채 실제 전송 대신 화면에 표시 ──
+    var realFetch = window.fetch;
+    window.fetch = function (url, opts) {
+      if (url === 'MOCK') {
+        var payload = JSON.parse(opts.body);
+        document.getElementById('out').textContent = JSON.stringify(payload, null, 2);
+        return Promise.resolve({ json: function () { return Promise.resolve({ ok: true }); } });
+      }
+      return realFetch.apply(this, arguments);
+    };
+
+    // 채점 완료 시점 흉내
+    document.getElementById('finish').addEventListener('click', function () {
+      ResultCollector.open({
+        score: 85,
+        correct: 17,
+        total: 20,
+        wrong: [3, 7, 12],
+        durationSec: 242
+      });
+    });
+  </script>
+</body>
+</html>

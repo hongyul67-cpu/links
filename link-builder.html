@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>결과수집 링크 생성기</title>
+<style>
+  :root{--bg:#f8fafc;--card:#fff;--ink:#0f172a;--sub:#64748b;--line:#e2e8f0;--brand:#6366f1;--ok:#16a34a}
+  *{box-sizing:border-box}
+  body{font-family:system-ui,"Malgun Gothic",sans-serif;background:var(--bg);color:var(--ink);margin:0;padding:24px 16px;line-height:1.5}
+  .wrap{max-width:720px;margin:0 auto}
+  h1{font-size:22px;margin:0 0 4px}
+  .lead{color:var(--sub);font-size:14px;margin:0 0 20px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px}
+  label{display:block;font-size:13px;font-weight:700;margin:0 0 6px}
+  .hint{font-weight:400;color:var(--sub);font-size:12px}
+  input[type=text]{width:100%;padding:11px;font-size:15px;border:1px solid #cbd5e1;border-radius:9px}
+  input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(99,102,241,.15)}
+  .grid2{display:flex;gap:12px}.grid2>div{flex:1}
+  .step{display:inline-block;background:var(--brand);color:#fff;font-size:12px;font-weight:800;border-radius:999px;padding:2px 9px;margin-right:6px}
+  .tool{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+  .tool:first-of-type{border-top:0}
+  .tool .name{flex:1;font-weight:600;font-size:14px}
+  .tool .name small{display:block;color:var(--sub);font-weight:400;font-size:12px;word-break:break-all}
+  button{border:0;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;background:var(--brand);color:#fff}
+  button.copy{background:#eef2ff;color:var(--brand)}
+  button.copy.done{background:var(--ok);color:#fff}
+  a.open{font-size:12px;color:var(--brand);text-decoration:none;white-space:nowrap}
+  .warn{color:#dc2626;font-size:13px;margin-top:8px;min-height:16px}
+  details{margin-top:8px}summary{cursor:pointer;font-size:13px;color:var(--brand);font-weight:600}
+  ol{padding-left:20px;font-size:13px;color:#334155}ol li{margin:4px 0}
+  code{background:#f1f5f9;padding:1px 5px;border-radius:4px;font-size:12px}
+  .modes{display:flex;gap:10px;margin-top:8px}
+  .mode{flex:1;display:flex;align-items:center;gap:7px;border:1px solid #cbd5e1;border-radius:10px;padding:11px 12px;font-size:14px;cursor:pointer}
+  .mode:has(input:checked){border-color:var(--brand);background:#eef2ff}
+  .mode input{accent-color:var(--brand)}
+  .chk{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;font-weight:700;cursor:pointer}
+  .chk input{width:18px;height:18px;accent-color:var(--brand)}
+  .guidelink{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:11px;padding:12px 14px;margin-bottom:16px;font-size:13.5px;color:#3730a3;text-decoration:none}
+  .guidelink b{color:#312e81}
+  .guidelink .arrow{background:var(--brand);color:#fff;border-radius:8px;padding:6px 12px;font-weight:700;white-space:nowrap}
+  button.qr{background:#f0fdf4;color:#15803d}
+  .qr-ov{position:fixed;inset:0;background:rgba(15,23,42,.6);display:none;align-items:center;justify-content:center;z-index:999;padding:16px}
+  .qr-ov.on{display:flex}
+  .qr-card{background:#fff;border-radius:16px;padding:22px;max-width:340px;width:100%;text-align:center}
+  .qr-card h3{margin:0 0 4px;font-size:17px}
+  .qr-card .qsub{color:var(--sub);font-size:13px;margin:0 0 14px}
+  .qr-img{width:240px;height:240px;margin:0 auto;display:flex;align-items:center;justify-content:center}
+  .qr-img img{width:100%;height:100%;image-rendering:pixelated}
+  .qr-btns{display:flex;gap:10px;margin-top:16px}
+  .qr-btns a,.qr-btns button{flex:1;text-align:center;text-decoration:none;padding:11px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer;border:0}
+  .qr-save{background:var(--brand);color:#fff}
+  .qr-close{background:#e2e8f0;color:#334155}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>결과수집 링크 생성기</h1>
+  <p class="lead">본인 구글 시트에 학생 결과를 모으려면, 아래에 <b>본인 Apps Script 주소</b>만 붙여넣으세요. 도구별 공유 링크가 자동으로 만들어집니다.</p>
+
+  <a class="guidelink" href="./guide.html">
+    <span>❓ <b>주소가 없거나 설정이 처음이신가요?</b><br>구글 시트 연결부터 차근차근 안내해요.</span>
+    <span class="arrow">설정 가이드 →</span>
+  </a>
+
+  <div class="card">
+    <label><span class="step">1</span>내 Apps Script 웹앱 주소 (exec URL)
+      <span class="hint">아직 없다면 아래 "처음이신가요?" 펼쳐서 5분이면 만듭니다.</span>
+    </label>
+    <input id="url" type="text" placeholder="https://script.google.com/macros/s/AKfyc.../exec">
+    <div class="warn" id="warn"></div>
+
+    <div style="margin-top:16px">
+      <label><span class="step">2</span>누구에게 줄 링크인가요?</label>
+      <div class="modes">
+        <label class="mode"><input type="radio" name="mode" value="grade" checked> <b>한 학년</b> <span class="hint">학생이 반을 고름</span></label>
+        <label class="mode"><input type="radio" name="mode" value="class"> <b>한 반</b> <span class="hint">반 고정</span></label>
+      </div>
+    </div>
+
+    <div class="grid2" style="margin-top:12px">
+      <div id="gradeField">
+        <label>반 목록 <span class="hint">쉼표로 구분</span></label>
+        <input id="cls" type="text" value="1,2,3,4,5">
+      </div>
+      <div id="classField" style="display:none">
+        <label>반 (이 링크 전용)</label>
+        <input id="fixcls" type="text" placeholder="예: 3">
+      </div>
+      <div>
+        <label>번호 최대</label>
+        <input id="max" type="text" value="40">
+      </div>
+    </div>
+
+    <label class="chk"><input id="name" type="checkbox"> 이름도 입력받기 <span class="hint">번호만으로 충분하면 꺼두세요</span></label>
+
+    <details>
+      <summary>처음이신가요? — 내 시트 만들고 주소 얻는 법 (5분)</summary>
+      <ol>
+        <li>구글 드라이브에서 <b>새 스프레드시트</b> 만들기 (이름: 예 "학습결과")</li>
+        <li>메뉴 <b>[확장 프로그램] → [Apps Script]</b> 클릭</li>
+        <li>기본 코드 지우고, 담당자가 준 <code>Code.gs</code> 내용 붙여넣고 저장</li>
+        <li><b>[배포] → [새 배포] → 유형: 웹 앱</b></li>
+        <li>실행 계정 <b>나</b>, 액세스 권한 <b>모든 사용자</b> → 배포</li>
+        <li>나오는 <b>웹앱 URL</b>(<code>.../exec</code>)을 복사해 위 칸에 붙여넣기</li>
+      </ol>
+    </details>
+  </div>
+
+  <div class="card">
+    <label style="margin-bottom:10px"><span class="step">3</span>도구별 공유 링크 <span class="hint">링크 복사 또는 QR로 나눠주세요</span></label>
+    <div id="tools"></div>
+    <p class="hint" style="margin-top:10px">💡 링크가 긴 건 정상이에요(안에 시트 주소가 들어있어요). 학생에겐 <b>QR</b>을 보여주면 스캔만 하면 돼요.</p>
+  </div>
+</div>
+
+<!-- QR 팝업 -->
+<div class="qr-ov" id="qrov">
+  <div class="qr-card">
+    <h3 id="qrName">QR</h3>
+    <p class="qsub">학생이 카메라로 스캔하면 도구가 열려요</p>
+    <div class="qr-img" id="qrImg"></div>
+    <div class="qr-btns">
+      <a class="qr-save" id="qrSave" download="qr.png">이미지 저장</a>
+      <button class="qr-close" id="qrClose">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- QR 생성 라이브러리(브라우저에서 직접 생성, 데이터 외부 전송 없음) -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>
+  // ── 담당자(제작자)가 관리: 결과수집이 적용된 도구 목록 ──
+  // 새 도구를 추가하면 여기 한 줄만 넣으면 됩니다.
+  var TOOLS = [
+    { name: '자동화설비 필기 기출앱', url: 'https://hongyul67-cpu.github.io/automation-equipment-exam/' },
+    { name: '3D프린터 마스터',       url: 'https://hongyul67-cpu.github.io/3dprinter-master/' },
+    { name: '기초학력 진단',          url: 'https://hongyul67-cpu.github.io/gicho-hakryeok-master/' },
+    { name: '도면읽기 마스터',        url: 'https://hongyul67-cpu.github.io/domyeon-master/' },
+    { name: '시퀀스·PLC 마스터',      url: 'https://hongyul67-cpu.github.io/sequence-plc-master/' }
+  ];
+
+  var elUrl = document.getElementById('url');
+  var elCls = document.getElementById('cls');
+  var elFixCls = document.getElementById('fixcls');
+  var elMax = document.getElementById('max');
+  var elName = document.getElementById('name');
+  var elWarn = document.getElementById('warn');
+  var elTools = document.getElementById('tools');
+  var gradeField = document.getElementById('gradeField');
+  var classField = document.getElementById('classField');
+
+  function currentMode() {
+    var r = document.querySelector('input[name="mode"]:checked');
+    return r ? r.value : 'grade';
+  }
+
+  function buildQuery() {
+    var rc = elUrl.value.trim();
+    var q = '?rc=' + encodeURIComponent(rc);
+    var max = elMax.value.trim();
+    if (currentMode() === 'class') {
+      var fc = elFixCls.value.trim();
+      if (fc) q += '&fixcls=' + encodeURIComponent(fc);
+    } else {
+      var cls = elCls.value.trim();
+      if (cls && cls !== '1,2,3,4,5,6,7,8,9,10') q += '&cls=' + encodeURIComponent(cls);
+    }
+    if (max && max !== '40') q += '&max=' + encodeURIComponent(max);
+    if (elName.checked) q += '&name=1';
+    return q;
+  }
+
+  function validUrl(u) {
+    return /^https:\/\/script\.google\.com\/macros\/s\/.+\/exec$/.test(u);
+  }
+
+  function render() {
+    var mode = currentMode();
+    gradeField.style.display = (mode === 'class') ? 'none' : '';
+    classField.style.display = (mode === 'class') ? '' : 'none';
+
+    var rc = elUrl.value.trim();
+    var ready = validUrl(rc);
+    if (ready && mode === 'class' && !elFixCls.value.trim()) {
+      ready = false;
+      elWarn.textContent = '한 반용 링크는 "반"을 입력하세요.';
+    } else {
+      elWarn.textContent = (rc && !validUrl(rc))
+        ? '주소 형식을 확인하세요. script.google.com/macros/s/.../exec 형태여야 합니다.'
+        : '';
+    }
+
+    elTools.innerHTML = '';
+    TOOLS.forEach(function (t) {
+      var link = ready ? (t.url + buildQuery()) : '';
+      var row = document.createElement('div');
+      row.className = 'tool';
+      row.innerHTML =
+        '<div class="name">' + t.name +
+          (ready ? '<small>' + link + '</small>' : '<small style="color:#94a3b8">위에 주소를 넣으면 링크가 생깁니다</small>') +
+        '</div>' +
+        (ready ? '<button class="qr" data-link="' + link.replace(/"/g, '&quot;') + '" data-name="' + t.name.replace(/"/g, '&quot;') + '">QR</button>' +
+                 '<a class="open" href="' + link + '" target="_blank">열기 ↗</a>' +
+                 '<button class="copy" data-link="' + link.replace(/"/g, '&quot;') + '">복사</button>' : '');
+      elTools.appendChild(row);
+    });
+
+    Array.prototype.forEach.call(elTools.querySelectorAll('.copy'), function (b) {
+      b.addEventListener('click', function () {
+        navigator.clipboard.writeText(b.getAttribute('data-link')).then(function () {
+          b.textContent = '복사됨 ✓'; b.className = 'copy done';
+          setTimeout(function () { b.textContent = '복사'; b.className = 'copy'; }, 1500);
+        });
+      });
+    });
+
+    Array.prototype.forEach.call(elTools.querySelectorAll('.qr'), function (b) {
+      b.addEventListener('click', function () {
+        showQR(b.getAttribute('data-link'), b.getAttribute('data-name'));
+      });
+    });
+  }
+
+  // ── QR 팝업 ──
+  var qrov = document.getElementById('qrov');
+  function showQR(link, name) {
+    var box = document.getElementById('qrImg');
+    document.getElementById('qrName').textContent = name;
+    if (typeof qrcode === 'undefined') {
+      box.innerHTML = '<div style="font-size:13px;color:#dc2626;padding:20px">QR 라이브러리를 불러오지 못했어요.<br>링크를 복사해서 나눠주세요.</div>';
+      document.getElementById('qrSave').style.display = 'none';
+    } else {
+      var qr = qrcode(0, 'M');       // typeNumber 0 = 자동 크기
+      qr.addData(link);
+      qr.make();
+      var gifUrl = qr.createDataURL(8, 8);   // (셀크기, 여백) — GIF 데이터URL
+      box.innerHTML = '<img src="' + gifUrl + '" alt="QR">';
+      var save = document.getElementById('qrSave');
+      var fname = (name || 'qr').replace(/[\\/:*?"<>|]/g, '_');
+      save.style.display = '';
+      save.href = gifUrl; save.download = fname + '.gif';   // 기본값(변환 실패 대비)
+      // PNG로 변환해 저장(더 범용적)
+      var im = new Image();
+      im.onload = function () {
+        try {
+          var c = document.createElement('canvas');
+          c.width = im.width; c.height = im.height;
+          c.getContext('2d').drawImage(im, 0, 0);
+          save.href = c.toDataURL('image/png'); save.download = fname + '.png';
+        } catch (e) { /* 변환 실패 시 gif 유지 */ }
+      };
+      im.src = gifUrl;
+    }
+    qrov.className = 'qr-ov on';
+  }
+  function closeQR() { qrov.className = 'qr-ov'; }
+  document.getElementById('qrClose').addEventListener('click', closeQR);
+  qrov.addEventListener('click', function (e) { if (e.target === qrov) closeQR(); });
+
+  [elUrl, elCls, elFixCls, elMax].forEach(function (el) { el.addEventListener('input', render); });
+  elName.addEventListener('change', render);
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="mode"]'), function (r) {
+    r.addEventListener('change', render);
+  });
+  render();
+</script>
+</body>
+</html>

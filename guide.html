@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>결과수집 설정 가이드 (교사용)</title>
+<style>
+  :root{--bg:#f8fafc;--card:#fff;--ink:#0f172a;--sub:#5c6a86;--line:#e2e8f0;--brand:#6366f1;--ok:#16a34a;--warnbg:#fff7ed;--warnbd:#fed7aa;--warnink:#9a3412}
+  *{box-sizing:border-box}
+  body{font-family:system-ui,"Malgun Gothic",sans-serif;background:var(--bg);color:var(--ink);margin:0;padding:22px 15px 60px;line-height:1.6}
+  .wrap{max-width:560px;margin:0 auto}
+  h1{font-size:22px;margin:0 0 4px}
+  .lead{color:var(--sub);font-size:14px;margin:0 0 8px}
+  .callout{background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:11px 13px;font-size:13.5px;color:#3730a3;margin:14px 0 22px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 16px 14px;margin-bottom:14px}
+  .step h2{font-size:16px;margin:0 0 8px;display:flex;align-items:center;gap:9px}
+  .num{background:var(--brand);color:#fff;font-size:13px;font-weight:800;border-radius:50%;width:26px;height:26px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 26px}
+  .step p{margin:6px 0;font-size:14px}
+  .step ul{margin:6px 0;padding-left:20px;font-size:14px}
+  .step li{margin:4px 0}
+  b.hl{background:#fef9c3;padding:0 3px;border-radius:3px}
+  .path{background:#f1f5f9;border-radius:7px;padding:3px 8px;font-size:13px;font-weight:600;display:inline-block;margin:2px 0}
+  .warn{background:var(--warnbg);border:1px solid var(--warnbd);border-radius:11px;padding:14px;margin-bottom:14px}
+  .warn h2{color:var(--warnink)}
+  .warn .num{background:#ea580c}
+  textarea{width:100%;height:150px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11.5px;border:1px solid #cbd5e1;border-radius:9px;padding:10px;background:#0f172a;color:#a5f3fc;resize:vertical}
+  button.copy{margin-top:8px;border:0;border-radius:9px;padding:11px 16px;font-size:14px;font-weight:800;cursor:pointer;background:var(--brand);color:#fff}
+  button.copy.done{background:var(--ok)}
+  .go{display:block;text-align:center;text-decoration:none;background:var(--brand);color:#fff;font-weight:800;border-radius:10px;padding:13px;margin-top:8px;font-size:15px}
+  .go.alt{background:#0ea5e9}
+  .tip{font-size:12.5px;color:var(--sub);margin-top:6px}
+  details{margin-top:10px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:0 12px}
+  summary{cursor:pointer;font-weight:700;font-size:13.5px;padding:11px 0;color:var(--brand)}
+  details p,details li{font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>📥 결과수집 설정 가이드</h1>
+  <p class="lead">학생들이 학습도구를 풀면, 결과가 <b>내 구글 시트</b>에 자동으로 쌓이게 만듭니다.</p>
+  <div class="callout">💻 <b>1~4단계는 컴퓨터로 딱 한 번만</b> 하면 돼요(5분). 그 뒤 학생 링크 보내기·결과 보기는 폰으로 됩니다. <br>※ "AppSheet" 앱은 필요 없어요. 지우셔도 됩니다.</div>
+
+  <div class="step">
+    <h2><span class="num">1</span>구글 시트 만들기</h2>
+    <p>구글 드라이브에서 <b>새 스프레드시트</b>를 하나 만들어요. 이름은 아무거나 (예: "학습결과").</p>
+  </div>
+
+  <div class="step">
+    <h2><span class="num">2</span>Apps Script 열고 코드 붙여넣기</h2>
+    <p>시트 상단 메뉴에서 <span class="path">확장 프로그램 → Apps Script</span> 클릭.</p>
+    <p>화면에 있던 코드를 <b>전부 지우고</b>, 아래 코드를 복사해 붙여넣은 뒤 <b class="hl">저장(💾)</b>.</p>
+    <textarea id="code" readonly></textarea>
+    <button class="copy" id="copyBtn">코드 복사하기</button>
+    <p class="tip">🔁 <b>이미 배포하신 분</b>은 이 코드로 다시 붙여넣고 저장한 뒤, <span class="path">배포 → 배포 관리 → ✏ → 버전 "새 버전" → 배포</span> 를 해야 <b>이름 칸</b>이 적용돼요.</p>
+  </div>
+
+  <div class="step">
+    <h2><span class="num">3</span>배포하기 (웹 앱)</h2>
+    <p>오른쪽 위 <span class="path">배포 → 새 배포</span> 클릭.</p>
+    <ul>
+      <li>톱니바퀴 ⚙ → <b>웹 앱</b> 선택</li>
+      <li>실행 계정: <b class="hl">나</b></li>
+      <li>액세스 권한: <b class="hl">모든 사용자</b> ← 이거 꼭!</li>
+      <li>아래 <b>배포</b> 버튼</li>
+    </ul>
+  </div>
+
+  <div class="warn step">
+    <h2><span class="num">⚠</span>중간에 "확인되지 않은 앱" 화면이 떠요</h2>
+    <p>겁내지 마세요. 내가 만든 거라 안전해요. 이렇게 통과합니다:</p>
+    <ul>
+      <li><b>액세스 권한 검토</b> → 내 구글 계정 선택</li>
+      <li>"Google에서 확인하지 않은 앱" 화면 → 왼쪽 아래 <b class="hl">고급</b> 클릭</li>
+      <li><b class="hl">(안전하지 않음)으로 이동</b> 클릭 → <b>허용</b></li>
+    </ul>
+  </div>
+
+  <div class="step">
+    <h2><span class="num">4</span>내 주소(URL) 복사</h2>
+    <p>배포가 끝나면 <b>웹 앱 URL</b>이 나와요. <span class="path">.../exec</span> 로 끝나는 그 주소를 <b class="hl">복사</b>해요. 이게 내 시트로 가는 열쇠예요.</p>
+  </div>
+
+  <div class="step">
+    <h2><span class="num">5</span>잘 되는지 확인 (여기서 폰으로도 OK)</h2>
+    <p>아래 <b>연결 테스트</b>를 열고, 방금 복사한 주소를 붙여넣고 버튼을 눌러요. 내 시트에 <code>연결테스트</code> 줄이 생기면 <b>성공!</b></p>
+    <a class="go alt" href="./test.html" target="_blank">🔌 연결 테스트 열기</a>
+  </div>
+
+  <div class="step">
+    <h2><span class="num">6</span>학생용 링크 만들어 나눠주기</h2>
+    <p><b>링크 생성기</b>에 내 주소를 붙여넣으면 도구별 <b>학생용 링크</b>가 만들어져요. 그 링크를 학급 단톡/클래스룸에 공유하면 끝.</p>
+    <a class="go" href="./link-builder.html" target="_blank">🔗 링크 생성기 열기</a>
+    <p class="tip">학생은 링크로 도구를 풀고 → 끝나면 <b>반 + 번호</b>를 넣고 제출해요. 결과는 내 시트로 들어와요(폰 구글 스프레드시트 앱으로 확인).</p>
+  </div>
+
+  <details>
+    <summary>❓ 안 될 때 (자주 있는 2가지)</summary>
+    <ul>
+      <li><b>시트에 아무것도 안 들어와요</b> → 3단계에서 액세스 권한이 <b>"모든 사용자"</b>가 맞는지 확인. 아니면 다시 배포.</li>
+      <li><b>코드를 고친 뒤부터 안 돼요</b> → <span class="path">배포 → 배포 관리 → ✏ → 버전 "새 버전" → 배포</span> 를 해야 반영돼요.</li>
+    </ul>
+  </details>
+</div>
+
+<script>
+  // 최신 Code.gs를 같은 사이트에서 직접 불러와 항상 일치시킴 (통합 백엔드)
+  var CODE = '';
+  var codeEl = document.getElementById('code');
+  var btn = document.getElementById('copyBtn');
+
+  codeEl.value = '불러오는 중…';
+  fetch('./Code.gs')
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
+    .then(function (t) { CODE = t; codeEl.value = t; })
+    .catch(function () {
+      codeEl.value = 'Code.gs를 못 불러왔어요. 담당자에게 Code.gs 파일을 요청하세요.';
+      btn.disabled = true;
+    });
+
+  btn.addEventListener('click', function () {
+    if (!CODE) return;
+    navigator.clipboard.writeText(CODE).then(function () {
+      btn.textContent = '복사됐어요 ✓'; btn.className = 'copy done';
+      setTimeout(function () { btn.textContent = '코드 복사하기'; btn.className = 'copy'; }, 1600);
+    }).catch(function () {
+      codeEl.focus(); codeEl.select();
+      btn.textContent = '직접 복사(Ctrl+C)';
+    });
+  });
+</script>
+</body>
+</html>
