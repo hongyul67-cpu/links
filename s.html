@@ -10,6 +10,14 @@
   주소(?d=)에 담긴 도구 목록만 보여줍니다.
   이 파일에는 전체 도구 목록이 없습니다 → 공유해도 다른 도구가 노출되지 않아요.
   링크는 "링크모음 마스터"에서 만듭니다.
+
+  ⛔ 이미 나눠준 링크들이 "이 파일"을 계속 불러옵니다.
+     · 이 파일을 고치면 예전에 준 링크에도 바로 반영됩니다 (보통은 좋은 일 — 개선이 자동 전파).
+     · 그러나 아래는 절대 금지 → 예전 링크가 전부 깨집니다:
+         1) 이 파일의 이름/위치 변경·삭제  (예전 링크가 404)
+         2) ?d= 데이터 형식(필드 순서/이름) 변경
+         3) links 저장소 삭제 또는 Pages 끄기
+     · 형식을 바꿔야 하면: 새 버전 번호(v)를 쓰고, 아래에서 옛 버전(v1)도 계속 처리하세요.
 -->
 <style>
   :root{--bg:#0f1420;--card:#1a2130;--card2:#222c40;--line:#2c3852;--tx:#eef2fb;--dim:#9aa7c2;
@@ -89,14 +97,23 @@ try{
   }
 }catch(e){ DATA=null; }
 
+/* 지원하는 최신 형식 번호. 형식을 바꾸면 올리되, 옛 버전 처리는 지우지 말 것 */
+var FMT_MAX = 1;
+var VER = (DATA && DATA.v) ? DATA.v : 1;   // v 없는 옛 링크 = 1로 취급
+
 if(!DATA || !DATA.l || !DATA.l.length){
   document.getElementById("app").innerHTML =
     '<div class="bad">😅 도구 목록을 불러오지 못했어요.<br>선생님께 받은 링크가 잘린 것 같아요 — 전체 주소를 다시 받아 주세요.</div>';
+} else if(VER > FMT_MAX){
+  // 마스터가 뷰어보다 새 형식으로 만든 링크 (배포 순서가 어긋난 경우)
+  document.getElementById("app").innerHTML =
+    '<div class="bad">🔄 이 링크는 최신 형식이라 아직 열 수 없어요.<br>잠시 후 새로고침하거나, 선생님께 알려 주세요.</div>';
 } else {
+  /* ── 형식 v1 읽기 ── (예전 링크가 이 코드에 의존합니다. 지우지 마세요) */
   var TITLE=DATA.t||"학습 도구 모음";
   var BAKED_RC=DATA.r||"";
   var ALLOW_RC=!!DATA.a;
-  /* 압축용 짧은 키 → 원래 형태로 */
+  /* 압축용 배열 → 원래 형태로. 순서 고정: [emoji,name,desc,repo,url,cat,type] */
   var TOOLS=DATA.l.map(function(a){
     return { emoji:a[0]||"🔗", name:a[1]||"", desc:a[2]||"", repo:a[3]||"", url:a[4]||"", cat:a[5]||"기타", type:a[6]||"" };
   });
