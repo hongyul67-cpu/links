@@ -141,11 +141,12 @@
     var gradeDeptRow = gradeDeptFields.length ?
       '<div class="rc-row" style="margin-bottom:14px">' + gradeDeptFields.join('') + '</div>' : '';
 
-    // 결과 요약 미리보기
+    // 결과 요약 미리보기 (labels로 도구별 용어 변경 가능. 예: 정답 → 완료 개수)
+    var LB = payload.labels || {};
     var parts = [];
-    if (payload.score !== undefined) parts.push('점수 <b>' + esc(payload.score) + '</b>');
+    if (payload.score !== undefined) parts.push(esc(LB.score || '점수') + ' <b>' + esc(payload.score) + '</b>');
     if (payload.correct !== undefined && payload.total !== undefined)
-      parts.push('정답 <b>' + esc(payload.correct) + '/' + esc(payload.total) + '</b>');
+      parts.push(esc(LB.correct || '정답') + ' <b>' + esc(payload.correct) + '/' + esc(payload.total) + '</b>');
     if (payload.durationSec !== undefined)
       parts.push('소요 <b>' + Math.round(payload.durationSec) + '초</b>');
     var summary = parts.length ? '<div class="rc-summary">' + parts.join(' · ') + '</div>' : '';
@@ -216,6 +217,7 @@
         total: payload.total,
         wrong: payload.wrong,
         durationSec: payload.durationSec,
+        labels: payload.labels,   // 도구별 시트 열 이름(선택). 탭이 처음 만들어질 때만 반영
         ua: navigator.userAgent,
         secret: CFG.secret
       };
