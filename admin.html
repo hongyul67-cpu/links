@@ -142,8 +142,12 @@ if(!DATA || !DATA.l || !DATA.l.length){
   rcEl.addEventListener("input", refresh);
 
   function buildUserUrl(){
-    /* 받은 형식(VER)을 그대로 echo + RAW_L 재사용 → user.html 이 동일하게 읽음. c 는 v2에선 불필요 */
-    var payload={ v:VER, t:TITLE, r:rcEl.value.trim(), l:RAW_L };
+    /* 받은 형식(VER)을 그대로 echo + RAW_L 재사용 → user.html 이 동일하게 읽음. c 는 v2에선 불필요.
+       exec 는 배포ID만(g) 담아 주소 단축 — 뷰어가 앞뒤를 붙여 복원. 형식 안 맞으면 전체주소(r). */
+    var v=rcEl.value.trim();
+    var m=/^https:\/\/script\.google\.com\/macros\/s\/(.+)\/exec$/.exec(v);
+    var payload={ v:VER, t:TITLE, l:RAW_L };
+    if(m) payload.g=m[1]; else payload.r=v;
     if(VER<2 && CATEGORIES.length) payload.c=CATEGORIES;
     return USER_VIEWER + "?d=" + LZString.compressToEncodedURIComponent(JSON.stringify(payload));
   }

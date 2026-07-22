@@ -90,7 +90,8 @@ if(!DATA || !DATA.l || !DATA.l.length){
     '<div class="bad">🔄 이 링크는 최신 형식이라 아직 열 수 없어요.<br>잠시 후 새로고침하거나, 선생님께 알려 주세요.</div>';
 } else {
   var TITLE=DATA.t||"학습 도구 모음";
-  var BAKED_RC=DATA.r||"";   // 유저 뷰어는 항상 '박힌 exec' 만 사용 (연결 패널 없음)
+  /* 유저 뷰어는 항상 '박힌 exec' 만 사용. g(배포ID만) 있으면 복원, 없으면 r(전체·옛 링크) */
+  var BAKED_RC=DATA.g ? ("https://script.google.com/macros/s/"+DATA.g+"/exec") : (DATA.r||"");
   /* v1: [emoji,name,desc,repo,url,cat,type]  ·  v2(간결): [emoji,name,repo,url,cat,type] (desc 없음) */
   var TOOLS=DATA.l.map(function(a){
     return (VER>=2)

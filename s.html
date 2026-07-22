@@ -111,7 +111,8 @@ if(!DATA || !DATA.l || !DATA.l.length){
 } else {
   /* ── 형식 v1 읽기 ── (예전 링크가 이 코드에 의존합니다. 지우지 마세요) */
   var TITLE=DATA.t||"학습 도구 모음";
-  var BAKED_RC=DATA.r||"";
+  /* exec: g(배포ID만) 있으면 앞뒤 붙여 복원, 없으면 r(전체주소·옛 링크 호환) */
+  var BAKED_RC=DATA.g ? ("https://script.google.com/macros/s/"+DATA.g+"/exec") : (DATA.r||"");
   var ALLOW_RC=!!DATA.a;
   /* 압축용 배열 → 원래 형태로.
      v1: [emoji,name,desc,repo,url,cat,type]  ·  v2(간결): [emoji,name,repo,url,cat,type] (desc 없음) */
