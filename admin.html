@@ -86,11 +86,15 @@ var bodyEl=document.getElementById("body");
 if(!DATA || !DATA.l || !DATA.l.length){
   bodyEl.innerHTML='<div class="bad">😅 도구 목록을 불러오지 못했어요.<br>관리자(마스터)에게서 받은 <b>admin 링크 전체 주소</b>를 다시 열어 주세요.</div>';
 } else {
+  var VER=DATA.v||1;
   var TITLE=DATA.t||"학습 도구 모음";
   var CATEGORIES=DATA.c||[];
   var RAW_L=DATA.l;   // 압축 배열 그대로 (유저 링크 만들 때 재사용)
+  /* v1: [emoji,name,desc,repo,url,cat,type]  ·  v2(간결): [emoji,name,repo,url,cat,type] */
   var TOOLS=RAW_L.map(function(a){
-    return { emoji:a[0]||"🔗", name:a[1]||"", desc:a[2]||"", repo:a[3]||"", url:a[4]||"", cat:a[5]||"기타", type:a[6]||"" };
+    return (VER>=2)
+      ? { emoji:a[0]||"🔗", name:a[1]||"", repo:a[2]||"", url:a[3]||"", cat:a[4]||"기타", type:a[5]||"" }
+      : { emoji:a[0]||"🔗", name:a[1]||"", repo:a[3]||"", url:a[4]||"", cat:a[5]||"기타", type:a[6]||"" };
   });
   document.getElementById("sub").innerHTML =
     '<b>'+esc(TITLE)+'</b> · 도구 '+TOOLS.length+'개 · 내 결과수집 주소(exec)만 연결하면 <b>학생 링크·QR</b>이 만들어져요.';
@@ -138,7 +142,9 @@ if(!DATA || !DATA.l || !DATA.l.length){
   rcEl.addEventListener("input", refresh);
 
   function buildUserUrl(){
-    var payload={ v:SHARE_FMT, t:TITLE, r:rcEl.value.trim(), c:CATEGORIES, l:RAW_L };
+    /* 받은 형식(VER)을 그대로 echo + RAW_L 재사용 → user.html 이 동일하게 읽음. c 는 v2에선 불필요 */
+    var payload={ v:VER, t:TITLE, r:rcEl.value.trim(), l:RAW_L };
+    if(VER<2 && CATEGORIES.length) payload.c=CATEGORIES;
     return USER_VIEWER + "?d=" + LZString.compressToEncodedURIComponent(JSON.stringify(payload));
   }
 
