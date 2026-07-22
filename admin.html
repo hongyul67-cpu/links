@@ -164,7 +164,9 @@ if(!DATA || !DATA.l || !DATA.l.length){
     }
     try{
       var qr=qrcode(0,"L"); qr.addData(url); qr.make();
-      var gif=qr.createDataURL(6,6);
+      var mod=qr.getModuleCount(); var qver=(mod-17)/4;
+      var cell=mod>100?8:10;
+      var gif=qr.createDataURL(cell,4*cell);
       box.innerHTML='<img src="'+gif+'" alt="학생 QR">'; qrBox.style.display="block";
       var save=document.getElementById("saveQr"); save.style.display=""; save.href=gif;
       save.download=(TITLE.replace(/[\\/:*?"<>|]/g,"_")||"학생")+"_QR.gif";
@@ -175,7 +177,8 @@ if(!DATA || !DATA.l || !DATA.l.length){
         save.href=c.toDataURL("image/png"); save.download=save.download.replace(/\.gif$/,".png");
       }catch(e){} };
       im.src=gif;
-      out.textContent=url+"\n\n주소 길이: "+url.length+"자"+(url.length>1200?" (김 — 도구가 많으면 QR이 빽빽해져요)":" (QR 스캔 양호)");
+      var grade=qver<=13?"QR 성겨서 스캔 아주 쉬워요 👍":qver<=17?"QR 스캔 양호 👍":qver<=21?"QR 조금 촘촘 — 도구가 적을수록 쉬워요":"QR 꽤 촘촘 — 도구를 나눠 2장으로 주면 스캔이 훨씬 쉬워요";
+      out.textContent=url+"\n\n도구 "+TOOLS.length+"개 · 주소 "+url.length+"자 · QR "+mod+"칸(v"+qver+") · "+grade;
     }catch(e){
       qrBox.style.display="block";
       box.innerHTML='<div style="color:#dc2626;font-size:12px;padding:20px">주소가 너무 길어 QR을 못 만들었어요.</div>';
