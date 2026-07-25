@@ -1,0 +1,354 @@
+[
+  {
+    "name": "자동화설비기능사 실기 도면게임",
+    "url": "https://hongyul67-cpu.github.io/automation-practical-exam/",
+    "category": "공개",
+    "description": "공개도면 문제게임 3모드(해독·3D매칭·치수찾기) + 편집기",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "블록 뷰 매칭",
+    "url": "https://hongyul67-cpu.github.io/block-view-matching/",
+    "category": "공개",
+    "description": "정투상도(투상도) 연습 게임",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "도면읽기 마스터",
+    "url": "https://hongyul67-cpu.github.io/domyeon-master/",
+    "category": "공개",
+    "description": "선의 종류 · 치수 읽기 · 기계요소 약도 + 종합시험",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "시퀀스 · PLC 학습 게임",
+    "url": "https://hongyul67-cpu.github.io/sequence-plc-master/",
+    "category": "공개",
+    "description": "시퀀스 · PLC 개념 + 게임",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "단면도 익스플로러",
+    "url": "https://hongyul67-cpu.github.io/section-view-explorer/",
+    "category": "공개",
+    "description": "기계 부품 단면도 원리를 3D로 체험 (SolidWorks 입문 전)",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "자동화설비기능사 필기 CBT",
+    "url": "https://hongyul67-cpu.github.io/automation-equipment-exam/",
+    "category": "수업",
+    "description": "18회차 1080문항 · 모의고사 · 과목별 학습 · 오답노트",
+    "copyrightFlag": true,
+    "privacyFlag": false
+  },
+  {
+    "name": "자동화설비기능사 실기 PLC 제어작업",
+    "url": "https://hongyul67-cpu.github.io/automation-plc-exam/",
+    "category": "공개",
+    "description": "PLC 제어작업 실기 대비 · 단계별 학습 + 시운전 시뮬레이터 + 테스트 채점",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "드론 만들기 게임 · 픽스호크",
+    "url": "https://hongyul67-cpu.github.io/drone-master/build-sim-pixhawk.html",
+    "category": "공개",
+    "description": "부품도감→프레임·모터 조립→픽스호크 결선→프로펠러→조종기 세팅→미션플래너 보정→가상 시험비행",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "드론 만들기 게임 · 아두이노 나노",
+    "url": "https://hongyul67-cpu.github.io/drone-master/build-sim-arduino.html",
+    "category": "공개",
+    "description": "FC기판 핀 결선표 · 3D출력 설정 · 모터/ESC 조립 · MultiWii 세팅 · ESC보정·안전점검",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "드론 임무장치 만들기",
+    "url": "https://hongyul67-cpu.github.io/drone-master/build-mission-device.html",
+    "category": "공개",
+    "description": "에어 드롭 장치·2축 짐벌 — 인벤터 모델링 순서·출력 설정·서보 제어로 실제 투하",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "드론 제작 실습 보고서",
+    "url": "https://hongyul67-cpu.github.io/drone-master/report.html",
+    "category": "수업",
+    "description": "만들기 게임 기록 자동 유입 · 자기평가 · 서술형 4문항 · 사진첨부 · A4 인쇄/PDF",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "드론 제작 마스터 (허브)",
+    "url": "https://hongyul67-cpu.github.io/drone-master/",
+    "category": "공개",
+    "description": "만들기 게임 3종 + 이론 6차시 + 실습 보고서 전체 모음",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "드론 1차시 · 드론 개요",
+    "url": "https://hongyul67-cpu.github.io/drone-master/01-drone-overview.html",
+    "category": "공개",
+    "description": "UAV·UAS·RPAS / 고정익·회전익·틸트로터·하이브리드 / 역사 기체 카드",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "드론 2차시 · 비행 원리",
+    "url": "https://hongyul67-cpu.github.io/drone-master/02-flight-principle.html",
+    "category": "공개",
+    "description": "양력·중력·추력·항력 + 스로틀/엘리베이터/에일러론/러더를 직접 조종해 익히기",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "드론 3차시 · 드론의 구성",
+    "url": "https://hongyul67-cpu.github.io/drone-master/03-drone-structure.html",
+    "category": "공개",
+    "description": "프레임·FC·ESC·모터·배터리·프로펠러 조립게임 + 센서게임",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "드론 4차시 · 법규와 준수사항",
+    "url": "https://hongyul67-cpu.github.io/drone-master/04-drone-law.html",
+    "category": "공개",
+    "description": "초경량비행장치 / 조종자 증명 1~4종(250g·2kg·7kg·25kg) / 준수사항",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "드론 5차시 · 배터리·센서·검사",
+    "url": "https://hongyul67-cpu.github.io/drone-master/05-battery-sensor-check.html",
+    "category": "공개",
+    "description": "리포 전압 / 센서 5종 / 안전성인증검사 4종 / 비행승인 / 벌칙",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "드론 6차시 · 신고번호와 공역",
+    "url": "https://hongyul67-cpu.github.io/drone-master/06-registration-airspace.html",
+    "category": "공개",
+    "description": "신고번호 C/N·M/H/P/S / 공역 A~G / 관제·비관제·통제·주의공역",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "3D프린터운용기능사 필기",
+    "url": "https://hongyul67-cpu.github.io/3dprinter-master/",
+    "category": "수업",
+    "description": "개념 + 기출 92문항 · 오답노트 학습게임",
+    "copyrightFlag": true,
+    "privacyFlag": false
+  },
+  {
+    "name": "전기기능사 필기 CBT",
+    "url": "https://hongyul67-cpu.github.io/electrician-written-exam/",
+    "category": "수업",
+    "description": "24회차 1,440문항 · CBT모의고사 · 유형별 랜덤 · 약점 집중 · 오답노트",
+    "copyrightFlag": true,
+    "privacyFlag": false
+  },
+  {
+    "name": "컴활 1급 필기 개념게임",
+    "url": "https://hongyul67-cpu.github.io/comhwal/",
+    "category": "수업",
+    "description": "컴퓨터일반·엑셀·액세스 3과목 22단원 · 카드/스피드퀴즈/OX/매칭 4모드",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "컴활 1급 필기 CBT",
+    "url": "https://hongyul67-cpu.github.io/comhwal-cbt/",
+    "category": "수업",
+    "description": "실전 60문항 모의고사 · 타이머·문제팔레트·과락판정·오답노트",
+    "copyrightFlag": true,
+    "privacyFlag": false
+  },
+  {
+    "name": "컴활 1급 실기 함수 연습소",
+    "url": "https://hongyul67-cpu.github.io/comhwal-excel/",
+    "category": "수업",
+    "description": "실제 엑셀 함수를 직접 입력하면 수식엔진이 계산해 채점 (IF·VLOOKUP·배열수식 등)",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "컴활 1급 실기 SQL 연습소",
+    "url": "https://hongyul67-cpu.github.io/comhwal-access/",
+    "category": "수업",
+    "description": "실제 SELECT문을 작성하면 SQL엔진이 실행해 결과로 채점 (WHERE·GROUP BY·집계 등)",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "컴활 2급 필기 개념게임",
+    "url": "https://hongyul67-cpu.github.io/comhwal2/",
+    "category": "수업",
+    "description": "컴퓨터 일반 · 스프레드시트 일반 2과목 · 카드/스피드퀴즈/OX/매칭",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "컴활 2급 필기 CBT",
+    "url": "https://hongyul67-cpu.github.io/comhwal2-cbt/",
+    "category": "수업",
+    "description": "실제 기출 320문항 · CBT 모의고사·과락판정·오답노트",
+    "copyrightFlag": true,
+    "privacyFlag": false
+  },
+  {
+    "name": "컴활 2급 실기 함수 연습소",
+    "url": "https://hongyul67-cpu.github.io/comhwal2-excel/",
+    "category": "수업",
+    "description": "엑셀 함수를 직접 입력하면 수식엔진이 계산해 채점 (2급 범위)",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "기초학력 진단 도구",
+    "url": "https://hongyul67-cpu.github.io/gicho-hakryeok-master/",
+    "category": "수업",
+    "description": "중학생 국·영·수 60문항 채점 + 결과 이미지 출력",
+    "copyrightFlag": true,
+    "privacyFlag": false
+  },
+  {
+    "name": "호주 현장학습 기록장",
+    "url": "https://hongyul67-cpu.github.io/global-memo/",
+    "category": "수업",
+    "description": "호주 글로벌 현장학습(용접·산업 견학) 하루 기록 · 사진 2~5장 · 저녁 구글폼 제출",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "생기부 문장 생성기",
+    "url": "https://hongyul67-cpu.github.io/saenggibu-generator/",
+    "category": "개인",
+    "description": "행동특성 · 세부능력특기사항 문장 생성",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "실습과제 도구 모음",
+    "url": "https://hongyul67-cpu.github.io/ai-task-tools/",
+    "category": "수업",
+    "description": "과제 양식 만들기 · 과제 목록 · 채점(교사용) · 제출 도구",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "상담 일지 도구",
+    "url": "https://hongyul67-cpu.github.io/counseling/",
+    "category": "개인",
+    "description": "상담 내용 기록 · 관리",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "사회생활 수업 학습 도구",
+    "url": "https://hongyul67-cpu.github.io/social-life-tools/",
+    "category": "공개",
+    "description": "사회생활 수업용 학습 도구 모음",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "방학 시간표 관리",
+    "url": "https://hongyul67-cpu.github.io/vacation-schedule/",
+    "category": "개인",
+    "description": "방학 계획 · 시간표 관리 웹앱",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "구슬 낙하 뽑기",
+    "url": "https://hongyul67-cpu.github.io/pinball-picker/",
+    "category": "공개",
+    "description": "공이 못·서로 부딪히며 떨어져 발표 순서·당번 추첨",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "신입생 모집 홍보 관리",
+    "url": "https://hongyul67-cpu.github.io/middle-school-hongbo/",
+    "category": "개인",
+    "description": "홍보 대상 중학교 우선순위 · 방문(1~6차) 기록·팀 공유 (학교 단위 데이터, 개인정보 없음)",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "결과수집 링크 생성기",
+    "url": "https://hongyul67-cpu.github.io/links/link-builder.html",
+    "category": "개인",
+    "description": "학습도구 결과를 내 구글시트로 모으기 · 교사별 공유 링크 자동 생성",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "결과수집 설정 가이드",
+    "url": "https://hongyul67-cpu.github.io/links/guide.html",
+    "category": "공개",
+    "description": "내 구글시트 연결 방법 (교사용, 컴퓨터로 5분)",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "링크모음 마스터 (이 파일)",
+    "url": "https://hongyul67-cpu.github.io/links-master/",
+    "category": "개인",
+    "description": "전체 도구 원본 · 공유용 파일/QR 만들기 (지금 이 화면)",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "공개 허브 (links)",
+    "url": "https://hongyul67-cpu.github.io/links/",
+    "category": "개인",
+    "description": "예전 공개 링크 허브 — 동결 유지, 건드리지 않음",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "결과수집 백엔드 (result-collector)",
+    "url": "https://github.com/hongyul67-cpu/result-collector",
+    "category": "개인",
+    "description": "links/collector.js 로 통합된 폴백 저장소 · 더 이상 수정 안 함",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "화면 캡처 SnapShot",
+    "url": "https://github.com/hongyul67-cpu/snapshot-capture",
+    "category": "개인",
+    "description": "Windows 화면 캡처 프로그램 · 저장소에서 SnapShot.exe 내려받아 실행",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "폰 ↔ PC 원격 (phone-pc-remote)",
+    "url": "https://github.com/hongyul67-cpu/phone-pc-remote",
+    "category": "개인",
+    "description": "개인용 원격 조작 도구 · 비공개 저장소",
+    "copyrightFlag": false,
+    "privacyFlag": false
+  },
+  {
+    "name": "시간표 · 결보강 시스템",
+    "url": "https://github.com/hongyul67-cpu/timetable-substitute",
+    "category": "개인",
+    "description": "특성화고 시간표 정규화 + 결강→보강 자동추천 (exe/html) · 교사 실명 포함 비공개, 공유 금지",
+    "copyrightFlag": false,
+    "privacyFlag": true
+  }
+]
