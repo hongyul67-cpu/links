@@ -275,10 +275,14 @@ function reveal(){
     //    누르는 순간 채점되는 도구도 있고, 누른 뒤 '제출'을 눌러야 채점되는 도구도 있다.
     watchCorrect(1000);
     opts[0].click();
-    setTimeout(function(){
-      var s = FIND.submit();
-      if(s && !s.disabled) s.click();          // 제출이 그제서야 켜지는 도구 대응
-    }, 40);
+    // 보기를 고르면 제출이 켜지는 도구가 있다. 대개 클릭 핸들러 안에서 바로 켜지므로 즉시 시도하고,
+    // 늦게 켜지는 경우에만 타이머로 한 번 더 시도한다(타이머는 배경 탭에서 크게 지연될 수 있음).
+    var s1 = FIND.submit();
+    if(s1 && !s1.disabled) s1.click();
+    else setTimeout(function(){
+      var s2 = FIND.submit();
+      if(s2 && !s2.disabled) s2.click();
+    }, 60);
   } else {
     setGo();
     return;
