@@ -48,9 +48,62 @@ var FIND = {
   submit : function(){ return byText(/^제출$|^정답 확인$|^채점/)[0]; },   // "선생님께 결과 제출" 은 제외
   tabs   : function(){ return $$(CFG.tabs || '.tab').filter(visible); },
   choices: function(){ return $$(CFG.choices || '.choice').filter(visible); },
+  // 즉시 채점형 도구의 '보기' (누르는 순간 채점되는 것들)
+  options: function(){ return CFG.options ? $$(CFG.options).filter(live) : autoOptions(); },
   explain: function(){ return $$(CFG.explain || '.explain').filter(function(e){
              return !e.classList.contains('hidden'); }); }
 };
+/* 도구마다 '보기'의 클래스 이름이 달라서, 같은 클래스를 가진 버튼 묶음을 찾아 보기로 본다.
+   - 버튼(BUTTON)만, 3~6개, 클래스가 모두 같을 것
+   - 탭·네비게이션·툴바 묶음은 제외 (잘못 눌러 화면이 넘어가지 않도록)
+   - 화면 아래쪽(문제 영역)에 있을수록 우선 */
+var SKIP_PARENT = /topnav|navbar|\bnav\b|tabs|filters|\bseg\b|btnrow|links|toolbar|menu|home/i;
+var SKIP_CHILD  = /\btab\b|segbtn|stepchip|partbtn|kscard|chip\b/i;
+function autoOptions(){
+  var best = null;
+  $$('*').forEach(function(p){
+    if(p.closest && p.closest('.cm-bar')) return;
+    if(SKIP_PARENT.test((p.className||'') + ' ' + (p.id||''))) return;
+    var kids = [].slice.call(p.children).filter(function(c){
+      return c.tagName === 'BUTTON' && live(c);
+    });
+    if(kids.length < 3 || kids.length > 6) return;
+    var first = (kids[0].className||'').trim().split(/\s+/)[0] || '';
+    if(!first || SKIP_CHILD.test(first)) return;
+    var same = kids.every(function(k){
+      return ((k.className||'').trim().split(/\s+/)[0] || '') === first; });
+    if(!same) return;
+    var score = kids.length * 10 + kids[0].getBoundingClientRect().top / 100;
+    if(!best || score > best.score) best = { kids: kids, score: score };
+  });
+  return best ? best.kids : [];
+}
+
+/* 정답 표시 클래스는 도구마다 다르다(correct / ok / right ...). 새로 붙는 것을 지켜본다. */
+var CORRECT_RE = /(^|[\s-])(correct|right|answer|ok)([\s-]|$)/i;
+function findCorrect(){
+  var sel = CFG.correct || '.correct,.ok,.right,.answer';
+  var hit = function(e){ return e.matches && e.matches(sel); };
+  // ① 지금 화면의 '보기' 중에서 먼저 찾는다 (.ok 같은 흔한 이름의 오탐 방지)
+  var pool = FIND.choices().concat(FIND.options());
+  var inPool = pool.filter(hit)[0];
+  if(inPool) return inPool;
+  // ② 없으면 문서 전체에서 (툴바 제외)
+  return $$(sel).filter(function(e){
+    return visible(e) && !(e.closest && e.closest('.cm-bar'));
+  })[0];
+}
+function watchCorrect(ms){
+  var done = false;
+  var mo = new MutationObserver(function(){
+    if(done) return;
+    var e = findCorrect();
+    if(e){ done = true; mo.disconnect(); clearSpot(); e.classList.add('cm-spot'); setGo(); }
+  });
+  mo.observe(document.body, {subtree:true, attributes:true, attributeFilter:['class'], childList:true});
+  setTimeout(function(){ if(!done){ mo.disconnect();
+    var e = findCorrect(); if(e){ clearSpot(); e.classList.add('cm-spot'); } setGo(); } }, ms || 700);
+}
 
 /* ---------- 스타일 ---------- */
 var CSS = ''
@@ -65,6 +118,9 @@ var CSS = ''
 /* 점수·채점 흔적 숨김 (손드는 퀴즈용) */
 + 'body.cm-quiet .scorebar,body.cm-quiet .toast,body.cm-quiet .pill{display:none !important}'
 + 'body.cm-quiet .choice.wrong{border-color:transparent !important;background:#f4efe0 !important}'
+/* 도구마다 오답 표시 클래스가 달라서(.no .wrong .mismatch) 수업 중에는 티가 나지 않게 눌러 둔다 */
++ 'body.cm-quiet .opt.no,body.cm-quiet .opt.wrong,body.cm-quiet .no,body.cm-quiet .mismatch{'
++   'border-color:transparent !important;box-shadow:none !important;filter:none !important}'
 /* 보기 크게 */
 + 'body.cm-on .choice{min-height:64px}'
 + 'body.cm-on .choice .num{font-size:1.05rem !important}'
@@ -108,6 +164,28 @@ var CSS = ''
 var styleEl = document.createElement('style');
 styleEl.textContent = CSS;
 document.head.appendChild(styleEl);
+
+/* 도구별 설정이 있으면 그에 맞는 규칙을 덧붙인다 (해설 가리기 / 오답 표시 지우기) */
+(function(){
+  var extra = '';
+  if(CFG.explain){
+    extra += CFG.explain.split(',').map(function(s){
+      return 'body.cm-veil ' + s.trim() + '{visibility:hidden !important}';
+    }).join('');
+  }
+  if(CFG.wrong){
+    extra += CFG.wrong.split(',').map(function(s){
+      return 'body.cm-quiet ' + s.trim() + '{border-color:transparent !important;'
+           + 'background:inherit !important;box-shadow:none !important;opacity:1 !important}';
+    }).join('');
+  }
+  if(CFG.hide){
+    extra += 'body.cm-on ' + CFG.hide + '{display:none !important}';
+  }
+  if(extra){
+    var s2 = document.createElement('style'); s2.textContent = extra; document.head.appendChild(s2);
+  }
+})();
 
 /* ---------- 상태 ---------- */
 var on = false, quiet = true, zoom = 1.5, phase = 'ask';   // ask → reveal
@@ -170,8 +248,11 @@ function setZoom(z){
 }
 
 /* ---------- 정답 가림 / 공개 ---------- */
+function hasQuestion(){
+  return (FIND.choices().length > 0 && !!FIND.submit()) || FIND.options().length > 0;
+}
 function applyVeil(){
-  document.body.classList.toggle('cm-veil', on && phase === 'ask' && FIND.choices().length > 0);
+  document.body.classList.toggle('cm-veil', on && phase === 'ask' && hasQuestion());
 }
 function clearSpot(){
   $$('.cm-spot').forEach(function(e){ e.classList.remove('cm-spot'); });
@@ -179,21 +260,29 @@ function clearSpot(){
 function reveal(){
   var chs = FIND.choices();
   var sub = FIND.submit();
-  if(chs.length && sub){
-    // 아무도 고르지 않았으면 임의로 하나 골라 채점을 돌린다(점수·문구는 숨겨져 있음)
-    var picked = chs.some(function(c){ return c.classList.contains('sel'); });
-    if(!picked) chs[0].click();
-    sub.click();
-  }
+  var opts = FIND.options();
   phase = 'reveal';
   document.body.classList.remove('cm-veil');
-  setTimeout(function(){
-    clearSpot();
-    var okEl = $$('.correct').filter(visible)[0] ||
-               $$('[class*="correct"]').filter(visible)[0];
-    if(okEl) okEl.classList.add('cm-spot');
+
+  if(chs.length && sub){
+    // ① 고르고 제출하는 형: 아무도 고르지 않았으면 하나 골라 채점을 돌린다(점수·문구는 숨겨져 있음)
+    var picked = chs.some(function(c){ return c.classList.contains('sel'); });
+    if(!picked) chs[0].click();
+    watchCorrect(700);
+    sub.click();
+  } else if(opts.length){
+    // ② 누르는 즉시 채점되는 형: 아무거나 누르면 도구가 정답에 표시를 해 준다
+    watchCorrect(900);
+    opts[0].click();
+  } else {
     setGo();
-  }, 60);
+    return;
+  }
+  setTimeout(function(){
+    var okEl = findCorrect();
+    if(okEl && !document.querySelector('.cm-spot')){ clearSpot(); okEl.classList.add('cm-spot'); }
+    setGo();
+  }, 120);
 }
 function advance(){
   var n = FIND.next();
@@ -209,7 +298,7 @@ function advance(){
 }
 function go(){          // 한 번 누르면 공개, 다시 누르면 다음
   if(!on) return;
-  if(phase === 'ask' && FIND.choices().length && FIND.submit()) reveal();
+  if(phase === 'ask' && hasQuestion()) reveal();
   else advance();
 }
 function back(){
@@ -226,8 +315,7 @@ function back(){
 function setGo(){
   var b = bar && bar.querySelector('.cm-go');
   if(!b) return;
-  var hasQ = FIND.choices().length && FIND.submit();
-  b.textContent = (phase === 'ask' && hasQ) ? '정답 공개  ▶' : '다음  ▶';
+  b.textContent = (phase === 'ask' && hasQuestion()) ? '정답 공개  ▶' : '다음  ▶';
 }
 
 /* ---------- 타이머 ---------- */
