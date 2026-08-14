@@ -58,7 +58,7 @@
     if (t.div === 1) { subMin = t.min; subMax = MAXRP; }
     return {
       key: t.key, name: t.name, icon: t.icon, c: t.c, c2: t.c2,
-      div: label, full: t.name + (label ? ' ' + label : ''),
+      div: label, divN: t.div, full: t.name + (label ? ' ' + label : ''),
       idx: i, sub: d, subMin: Math.round(subMin), subMax: Math.round(subMax),
       pct: Math.max(0, Math.min(100, Math.round((rp - subMin) / (subMax - subMin) * 100))),
       nextName: next ? next.name : null, nextAt: next ? next.min : null
@@ -127,7 +127,7 @@
       return '<div class="rk-bar" style="--rc:' + t.c + ';--rc2:' + t.c2 + '">' +
         '<i style="width:' + t.pct + '%"></i></div>' +
         '<div class="rk-sub">' + (t.nextName
-          ? (t.subMax - r.rp) + ' RP 더 모으면 <b>' + (t.sub < 99 ? nextLabel(t) : t.nextName) + '</b>'
+          ? Math.max(1, t.subMax - r.rp) + ' RP 더 모으면 <b>' + nextLabel(t) + '</b>'
           : '최고 계급입니다') + '</div>';
     },
     card: function (rk) {
@@ -157,8 +157,8 @@
     }
   };
   function nextLabel(t) {
-    if (t.sub >= t.div) return t.nextName;             // 이 티어 최상위 → 다음 티어
-    var next = ROMAN[t.div - (t.sub + 1) + 1];
+    if (t.sub >= t.divN) return t.nextName;            // 이 티어 최상위 → 다음 티어
+    var next = ROMAN[t.divN - t.sub];                  // 한 칸 위 세부계급
     return t.name + (next ? ' ' + next : '');
   }
 
