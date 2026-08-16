@@ -55,8 +55,53 @@
     fixCls: qp('fixcls') || d.fixcls || '',   // 반 고정(한 반용 링크). 값이 있으면 반 선택 대신 고정
     askName: (qp('name') || d.name || '') === '1',  // 이름 입력 받을지
     askGrade: (qp('grade') || d.grade || '') === '1',  // 학년 입력 받을지
-    askDept: (qp('dept') || d.dept || '') === '1'  // 학과 입력 받을지
+    askDept: (qp('dept') || d.dept || '') === '1',  // 학과 입력 받을지
+    askMemo: false   // (사용 안 함) 학생 직접 입력 대신 아래 autoKeywords로 자동 생성
   };
+
+  /* ── 생기부(세특) 작성용 키워드·문장 자동 생성 ──────────────────
+     학생이 따로 쓰지 않고, 무엇을 실습했는지 + 정답률 + 소요시간 + 재도전 횟수로 만든다.
+     도구는 open() 호출 때 mode(활동명), retry(도전 횟수), tier(계급), extra(추가 키워드)를 넘기면 된다. */
+  function autoKeywords(p) {
+    var k = [];
+    if (p.mode) k.push(p.mode + ' 실습');
+    var total = Number(p.total) || 0, correct = Number(p.correct) || 0;
+    var rate = total > 0 ? Math.round(correct / total * 100) : null;
+    if (rate !== null) {
+      if (rate >= 90) k.push('개념을 정확히 이해함');
+      else if (rate >= 75) k.push('핵심 개념을 대체로 이해함');
+      else if (rate >= 50) k.push('기본 개념 이해, 보완 필요');
+      else k.push('추가 지도 필요');
+    }
+    var sec = Number(p.durationSec) || 0;
+    if (rate !== null && sec > 0 && total > 0) {
+      var perQ = sec / total;
+      if (rate >= 80 && perQ <= 12) k.push('빠르고 정확하게 해결');
+      else if (rate >= 80) k.push('신중하게 끝까지 해결');
+      else if (perQ >= 25) k.push('시간을 들여 끈기 있게 시도');
+    }
+    if (Number(p.retry) >= 2) k.push('스스로 ' + p.retry + '회 반복 연습');
+    if (p.tier) k.push('계급 ' + p.tier + ' 달성');
+    if (p.extra) k = k.concat([].concat(p.extra));
+    return k.join(' · ');
+  }
+  function autoDraft(p) {
+    var total = Number(p.total) || 0, correct = Number(p.correct) || 0;
+    var rate = total > 0 ? Math.round(correct / total * 100) : null;
+    var act = p.mode ? '‘' + p.mode + '’' : '수업';
+    var s = act + ' 학습 활동에 참여하여 ';
+    if (total > 0) s += total + '문항 중 ' + correct + '문항을 해결(정답률 ' + rate + '%)하였음. ';
+    if (Number(p.retry) >= 2) s += '틀린 문제를 스스로 다시 풀어 보며 반복 학습하는 태도를 보였고, ';
+    var sec = Number(p.durationSec) || 0;
+    if (rate !== null) {
+      if (rate >= 90) s += '핵심 개념을 정확히 이해하고 적용하는 능력이 우수함.';
+      else if (rate >= 75) s += '주요 개념을 이해하고 문제 상황에 적용할 수 있음.';
+      else if (rate >= 50) s += '기본 개념은 이해하였으며 반복 연습을 통한 정착이 필요함.';
+      else s += '개념 이해를 위한 추가 지도가 필요함.';
+    }
+    if (sec > 0) s += ' (활동 시간 약 ' + Math.max(1, Math.round(sec / 60)) + '분)';
+    return s;
+  }
 
   var LS_KEY = 'rc_student';   // 마지막 반/번호 기억
 
@@ -151,6 +196,8 @@
       parts.push('소요 <b>' + Math.round(payload.durationSec) + '초</b>');
     var summary = parts.length ? '<div class="rc-summary">' + parts.join(' · ') + '</div>' : '';
 
+    var memoField = '';
+
     ov.innerHTML =
       '<div class="rc-card" role="dialog" aria-modal="true">' +
         '<h3>결과 제출</h3>' +
@@ -164,6 +211,7 @@
             '<input id="rc-num" type="number" inputmode="numeric" min="1" max="' + CFG.maxNum + '" ' +
             'placeholder="번호" value="' + (last.num ? esc(last.num) : '') + '"></div>' +
         '</div>' +
+        memoField +
         '<div class="rc-btns">' +
           '<button class="rc-btn rc-cancel" id="rc-cancel">취소</button>' +
           '<button class="rc-btn rc-ok" id="rc-ok">제출</button>' +
@@ -178,8 +226,13 @@
     var elName = ov.querySelector('#rc-name');
     var elGrade = ov.querySelector('#rc-grade');
     var elDept = ov.querySelector('#rc-dept');
+    var elMemo = ov.querySelector('#rc-memo');
     var elOk = ov.querySelector('#rc-ok');
     var elMsg = ov.querySelector('#rc-msg');
+    if (elMemo) {
+      var elCnt = ov.querySelector('#rc-cnt');
+      elMemo.addEventListener('input', function () { if (elCnt) elCnt.textContent = elMemo.value.length; });
+    }
 
     setTimeout(function () { (CFG.askName && elName ? elName : elNum).focus(); }, 50);
 
@@ -194,6 +247,7 @@
       var nameV = elName ? (elName.value || '').trim() : '';
       var gradeV = elGrade ? (elGrade.value || '').trim() : '';
       var deptV = elDept ? (elDept.value || '').trim() : '';
+      var memoV = elMemo ? (elMemo.value || '').trim() : '';
 
       if (CFG.askName && !nameV) { elMsg.className = 'rc-msg err'; elMsg.textContent = '이름을 입력하세요.'; elName.focus(); return; }
       if (CFG.askGrade && !gradeV) { elMsg.className = 'rc-msg err'; elMsg.textContent = '학년을 입력하세요.'; elGrade.focus(); return; }
@@ -218,6 +272,9 @@
         wrong: payload.wrong,
         durationSec: payload.durationSec,
         labels: payload.labels,   // 도구별 시트 열 이름(선택). 탭이 처음 만들어질 때만 반영
+        // 생기부(세특) 작성용 — 학생 입력 없이 활동·성취·태도로 자동 생성
+        keywords: autoKeywords(payload),
+        draft: autoDraft(payload),
         ua: navigator.userAgent,
         secret: CFG.secret
       };
