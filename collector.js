@@ -60,47 +60,73 @@
   };
 
   /* ── 생기부(세특) 작성용 키워드·문장 자동 생성 ──────────────────
-     학생이 따로 쓰지 않고, 무엇을 실습했는지 + 정답률 + 소요시간 + 재도전 횟수로 만든다.
-     도구는 open() 호출 때 mode(활동명), retry(도전 횟수), tier(계급), extra(추가 키워드)를 넘기면 된다. */
+     교사가 세특에 그대로 옮겨 쓸 수 있는 어투(명사형 종결)로 만든다.
+     · 도구 이름("○○ 마스터")이 아니라 배운 내용이 드러나게 학습 주제로 바꾼다.
+     · 계급·RP·점수 같은 게임 요소는 생기부에 넣지 않는다(교사용 참고 열에만 남는다).
+     · 부정적 낙인 대신 성장 관점으로 서술한다.
+     도구는 open() 호출 때 mode(활동명), retry(재도전 횟수), extra(교과 역량 키워드)를 넘기면 된다. */
+
+  /* "용접기호 마스터 — 기호 익히기" → "용접기호" 처럼 학습 주제만 남긴다.
+     "과목별 학습 · 기계요소" 처럼 앞이 일반어면 뒤(구체적인 단원)를 쓴다. */
+  var GENERIC = /^(과목별\s*학습|단원별\s*학습|전체|기본|심화|연습|학습|실습|도전|시험|평가)$/;
+  function topicOf(mode) {
+    var s = String(mode || '').split('—')[0].trim();          // 앞부분(주제)만
+    var parts = s.split('·').map(function (x) { return x.trim(); }).filter(Boolean);
+    if (parts.length > 1 && GENERIC.test(parts[0])) s = parts.slice(1).join(' · ');
+    else s = parts.join(' · ');
+    return strip(s);
+  }
+  function strip(s) {
+    s = String(s || '').replace(/\s*\(.*\)\s*$/, '').trim();
+    /* 도구·평가형식 꼬리표는 세특 문장에 어울리지 않으므로 떼어낸다 */
+    s = s.replace(/\s*(마스터|트레이너|연습소|익스플로러|비교기|시뮬레이터|게임|퀴즈|앱|도구|모음|허브)\s*$/g, '').trim();
+    s = s.replace(/\s*(CBT|cbt)\s*/g, ' ').trim();
+    s = s.replace(/\s*(모의고사|모의평가|테스트|점검|도전|연습|훈련|실습|학습)\s*$/g, '').trim();
+    return s.replace(/\s{2,}/g, ' ').trim();
+  }
+
   function autoKeywords(p) {
     var k = [];
-    if (p.mode) k.push(p.mode + ' 실습');
+    var topic = topicOf(p.mode);
+    if (topic) k.push(topic + ' 학습');
+
     var total = Number(p.total) || 0, correct = Number(p.correct) || 0;
     var rate = total > 0 ? Math.round(correct / total * 100) : null;
     if (rate !== null) {
-      if (rate >= 90) k.push('개념을 정확히 이해함');
-      else if (rate >= 75) k.push('핵심 개념을 대체로 이해함');
-      else if (rate >= 50) k.push('기본 개념 이해, 보완 필요');
-      else k.push('추가 지도 필요');
+      if (rate >= 90)      k.push('개념을 정확히 이해하고 적용함');
+      else if (rate >= 75) k.push('주요 개념을 이해하고 적용함');
+      else if (rate >= 50) k.push('기본 개념을 이해함');
+      else                 k.push('개념을 익혀 가는 단계');
     }
     var sec = Number(p.durationSec) || 0;
     if (rate !== null && sec > 0 && total > 0) {
       var perQ = sec / total;
-      if (rate >= 80 && perQ <= 12) k.push('빠르고 정확하게 해결');
-      else if (rate >= 80) k.push('신중하게 끝까지 해결');
-      else if (perQ >= 25) k.push('시간을 들여 끈기 있게 시도');
+      if (rate >= 80 && perQ <= 12) k.push('과제를 정확하고 신속하게 해결함');
+      else if (rate >= 80)          k.push('끝까지 신중하게 확인하며 해결함');
+      else if (perQ >= 25)          k.push('시간을 들여 끈기 있게 해결하려 함');
     }
-    if (Number(p.retry) >= 2) k.push('스스로 ' + p.retry + '회 반복 연습');
-    if (p.tier) k.push('계급 ' + p.tier + ' 달성');
+    if (Number(p.retry) >= 2) k.push('반복 학습으로 스스로 보완함');
     if (p.extra) k = k.concat([].concat(p.extra));
     return k.join(' · ');
   }
+
   function autoDraft(p) {
     var total = Number(p.total) || 0, correct = Number(p.correct) || 0;
     var rate = total > 0 ? Math.round(correct / total * 100) : null;
-    var act = p.mode ? '‘' + p.mode + '’' : '수업';
-    var s = act + ' 학습 활동에 참여하여 ';
-    if (total > 0) s += total + '문항 중 ' + correct + '문항을 해결(정답률 ' + rate + '%)하였음. ';
-    if (Number(p.retry) >= 2) s += '틀린 문제를 스스로 다시 풀어 보며 반복 학습하는 태도를 보였고, ';
-    var sec = Number(p.durationSec) || 0;
+    var topic = topicOf(p.mode);
+    var s = topic ? (topic + ' 학습 활동에 참여하여 ') : '수업 활동에 참여하여 ';
+    if (total > 0) s += '제시된 ' + total + '문항 중 ' + correct + '문항을 해결함(정답률 ' + rate + '%). ';
     if (rate !== null) {
-      if (rate >= 90) s += '핵심 개념을 정확히 이해하고 적용하는 능력이 우수함.';
-      else if (rate >= 75) s += '주요 개념을 이해하고 문제 상황에 적용할 수 있음.';
-      else if (rate >= 50) s += '기본 개념은 이해하였으며 반복 연습을 통한 정착이 필요함.';
-      else s += '개념 이해를 위한 추가 지도가 필요함.';
+      if (rate >= 90)      s += '핵심 개념을 정확히 이해하고 새로운 문제 상황에 적용하는 능력이 뛰어남. ';
+      else if (rate >= 75) s += '주요 개념을 이해하고 문제 상황에 적용할 수 있음. ';
+      else if (rate >= 50) s += '기본 개념을 이해하였으며, 반복 학습을 통해 적용 능력을 넓혀 가고 있음. ';
+      else                 s += '개념을 익혀 가는 단계로, 꾸준한 반복 학습을 통한 정착이 기대됨. ';
     }
-    if (sec > 0) s += ' (활동 시간 약 ' + Math.max(1, Math.round(sec / 60)) + '분)';
-    return s;
+    if (Number(p.retry) >= 2) s += '틀린 문항을 스스로 다시 풀어 보며 부족한 부분을 보완하려는 태도가 돋보임. ';
+    var sec = Number(p.durationSec) || 0;
+    if (rate !== null && sec > 0 && total > 0 && rate >= 80 && (sec / total) <= 12)
+      s += '주어진 과제를 정확하고 신속하게 처리함. ';
+    return s.trim();
   }
 
   var LS_KEY = 'rc_student';   // 마지막 반/번호 기억
