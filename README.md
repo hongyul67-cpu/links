@@ -1,5 +1,9 @@
 # result-collector
 
+> **도구를 만들거나 고치기 전에 [CONVENTIONS.md](CONVENTIONS.md) 를 먼저 읽으세요.**
+> 제출 규약(`ResultCollector.attach`), 문항 구성, git 규칙이 정리돼 있습니다.
+> 아래 문서의 `ResultCollector.open()` 직접 호출은 옛 방식입니다.
+
 학습도구(정적 HTML, GitHub Pages)의 **학생 결과를 각 교사가 자기 구글 시트로 모으는** 범용 위젯입니다.
 교사는 코드를 건드리지 않고, **자기 시트 주소가 담긴 링크**를 학생에게 공유하기만 하면 됩니다.
 
