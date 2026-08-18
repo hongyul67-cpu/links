@@ -352,11 +352,14 @@
         name: nameV,
         grade: gradeV,
         dept: deptV,
+        mode: payload.mode,        // 어느 파트에서 제출했는지 (예: 선의 종류 — 오류 찾기)
         score: payload.score,
         correct: payload.correct,
         total: payload.total,
         wrong: payload.wrong,
         durationSec: payload.durationSec,
+        retry: payload.retry,      // 같은 파트를 몇 번째 푸는지
+        tier: payload.tier,        // 계급
         labels: payload.labels,   // 도구별 시트 열 이름(선택). 탭이 처음 만들어질 때만 반영
         // 생기부(세특) 작성용 — 학생 입력 없이 활동·성취·태도로 자동 생성
         keywords: autoKeywords(payload),

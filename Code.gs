@@ -80,17 +80,21 @@ function rcAppend(d) {
   var L = d.labels || {};
   var sh = sheetOf(toolName,
     ['제출시각', '반', '번호', '이름', '학년', '학과',
+     '활동(파트)',
      L.score || '점수', L.correct || '정답수', L.total || '총문항', L.rate || '정답률(%)',
-     L.wrong || '오답번호', '소요(초)', '기기',
+     L.wrong || '틀린 문제', '소요(초)', '도전 횟수', '계급', '기기',
      '활동 키워드(생기부용)', '세특 문장(초안)']);
   var correct = numOf(d.correct), total = numOf(d.total);
   var rate = (total !== '' && total > 0) ? Math.round((correct / total) * 100) : '';
   sh.appendRow([
     new Date(), d.cls || '', d.num || '', d.name || '', d.grade || '', d.dept || '',
+    String(d.mode || '').slice(0, 80),
     d.score === undefined ? '' : d.score,
     correct, total, rate,
-    Array.isArray(d.wrong) ? d.wrong.join(', ') : (d.wrong || ''),
+    Array.isArray(d.wrong) ? d.wrong.join(' / ') : (d.wrong || ''),
     d.durationSec === undefined ? '' : d.durationSec,
+    d.retry === undefined ? '' : d.retry,
+    String(d.tier || ''),
     String(d.ua || '').slice(0, 60),
     String(d.keywords || '').slice(0, 300),
     String(d.draft || '').slice(0, 500)
