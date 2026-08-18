@@ -173,6 +173,66 @@
     try { localStorage.setItem(LS_KEY, JSON.stringify(o)); } catch (e) {}
   }
 
+  /* ── 제출 버튼 붙이기 (모든 학습도구 공용) ────────────────────────
+     도구는 채점이 끝난 자리에서 한 줄만 부르면 된다.
+       ResultCollector.attach(기준요소, function(){ return {score, correct, total, wrong, durationSec}; },
+                              { mode: '종합시험', extra: ['도면 해독'] });
+     · 제출 링크(?rc=)가 없어도 버튼은 보이고, 누르면 왜 안 되는지 알려준다.
+     · 같은 모드를 몇 번째 푸는지(retry)를 세어 생기부 키워드에 넣는다. */
+  var NL = String.fromCharCode(10);
+
+  function hasEndpoint() { return !!CFG.endpoint; }
+
+  function bumpTry(mode) {
+    var k = 'rcTry_' + CFG.tool + '_' + (mode || '');
+    var n = 0;
+    try { n = parseInt(localStorage.getItem(k) || '0', 10) || 0; } catch (e) {}
+    n += 1;
+    try { localStorage.setItem(k, String(n)); } catch (e) {}
+    return n;
+  }
+
+  function attach(anchor, getPayload, opts) {
+    opts = opts || {};
+    if (!anchor || !anchor.parentNode) return null;
+
+    var id = opts.id || 'rcBtn';
+    var old = document.getElementById(id);
+    if (old && old.parentNode) old.parentNode.removeChild(old);
+
+    var btn = document.createElement('button');
+    btn.id = id;
+    btn.className = opts.className || 'btn';
+    btn.style.marginTop = '12px';
+    btn.textContent = hasEndpoint() ? '🧑‍🏫 선생님께 결과 제출' : '🧑‍🏫 결과 제출';
+    if (!hasEndpoint()) btn.style.opacity = '.65';
+
+    btn.onclick = function () {
+      if (!hasEndpoint()) {
+        alert([
+          '이 링크로는 제출이 되지 않아요.', '',
+          '선생님이 나눠 준 제출용 링크(주소 뒤에 ?rc=... 가 붙은 링크)로',
+          '들어와야 반·번호를 입력하고 결과를 보낼 수 있습니다.', '',
+          '연습은 지금 이대로 계속 하셔도 됩니다.'
+        ].join(NL));
+        return;
+      }
+      var p = {};
+      try { p = getPayload() || {}; } catch (e) { p = {}; }
+      if (opts.mode && !p.mode) p.mode = opts.mode;
+      if (opts.extra && !p.extra) p.extra = opts.extra;
+      if (p.retry === undefined) p.retry = bumpTry(p.mode);
+      if (p.tier === undefined && window.Rank && Rank.get) {
+        try { p.tier = Rank.get().tier.full; } catch (e) {}
+      }
+      open(p);
+    };
+
+    if (anchor.after) anchor.after(btn);
+    else anchor.parentNode.insertBefore(btn, anchor.nextSibling);
+    return btn;
+  }
+
   function open(payload) {
     payload = payload || {};
     injectCss();
@@ -327,5 +387,5 @@
     });
   }
 
-  window.ResultCollector = { open: open, config: CFG };
+  window.ResultCollector = { open: open, attach: attach, hasEndpoint: hasEndpoint, bumpTry: bumpTry, config: CFG };
 })();
