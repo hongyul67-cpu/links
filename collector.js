@@ -27,7 +27,7 @@
  *   data-classes   (선택) 반 목록. 기본 "1,2,3,4,5,6,7,8,9,10"
  *   data-max-num   (선택) 번호 최대값. 기본 40
  *   data-secret    (선택) Code.gs의 SECRET과 같은 값(암호 쓸 때만)
- *   data-name      (선택) "1"이면 이름 입력칸을 보여줌
+ *   data-name      (선택) 이름 입력칸. 기본으로 보여 주며, "0"이면 감춤
  *   data-grade     (선택) "1"이면 학년 입력칸을 보여줌
  *   data-dept      (선택) "1"이면 학과 입력칸을 보여줌
  */
@@ -53,7 +53,10 @@
     maxNum: parseInt(qp('max') || d.maxNum || '40', 10),
     secret: qp('sec') || d.secret || '',
     fixCls: qp('fixcls') || d.fixcls || '',   // 반 고정(한 반용 링크). 값이 있으면 반 선택 대신 고정
-    askName: (qp('name') || d.name || '') === '1',  // 이름 입력 받을지
+    // 이름은 항상 받는다 — 누가 냈는지 모르는 제출은 쓸모가 없다.
+    // 예전에 나눠 준 링크에는 name=1 이 없어 익명으로 들어오던 문제가 있었다.
+    // 꼭 익명으로 받아야 하면 링크에 name=0 (또는 data-name="0")을 붙인다.
+    askName: (qp('name') || d.name || '1') !== '0',
     askGrade: (qp('grade') || d.grade || '') === '1',  // 학년 입력 받을지
     askDept: (qp('dept') || d.dept || '') === '1',  // 학과 입력 받을지
     askMemo: false   // (사용 안 함) 학생 직접 입력 대신 아래 autoKeywords로 자동 생성
