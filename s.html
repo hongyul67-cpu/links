@@ -137,7 +137,10 @@ if(!DATA || !DATA.l || !DATA.l.length){
   function linkOf(t){
     var u=t.url||("https://"+GH_USER+".github.io/"+t.repo+"/");
     var rc=curRc();
-    if(rc&&t.repo)u+=(u.indexOf("?")<0?"?":"&")+"rc="+encodeURIComponent(rc);
+    if(rc&&t.repo){
+      u+=(u.indexOf("?")<0?"?":"&")+"rc="+encodeURIComponent(rc);
+      u+="&name=1";              // 이름은 항상 받음(누가 냈는지 알아야 하므로)
+    }
     return u;
   }
 
