@@ -117,7 +117,10 @@ var CSS = ''
 + 'body.cm-on #rcBtn,body.cm-on .cm-chrome{display:none !important}'
 /* 점수·채점 흔적 숨김 (손드는 퀴즈용) */
 + 'body.cm-quiet .scorebar,body.cm-quiet .toast,body.cm-quiet .pill{display:none !important}'
-+ 'body.cm-quiet .choice.wrong{border-color:transparent !important;background:#f4efe0 !important}'
+/* 배경만 밝게 바꾸면 어두운 테마 도구에서는 밝은 글자가 그대로 남아 안 보인다.
+   배경을 바꿀 때는 글자색도 같이 정한다. */
++ 'body.cm-quiet .choice.wrong{border-color:transparent !important;'
++   'background:#f4efe0 !important;color:#1a1306 !important}'
 /* 도구마다 오답 표시 클래스가 달라서(.no .wrong .mismatch) 수업 중에는 티가 나지 않게 눌러 둔다 */
 + 'body.cm-quiet .opt.no,body.cm-quiet .opt.wrong,body.cm-quiet .no,body.cm-quiet .mismatch{'
 +   'border-color:transparent !important;box-shadow:none !important;filter:none !important}'
