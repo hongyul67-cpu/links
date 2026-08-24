@@ -98,6 +98,18 @@
       document.body.appendChild(b);
     }
     b.textContent = plan.label;
+    stack(b);
+  }
+
+  /* 왼쪽 아래에 다른 공용 단추(reset.js 의 「기록 초기화」)가 이미 있으면 그 위로 올라간다 */
+  function stack(b) {
+    var other = document.querySelector('.tr-btn');
+    var up = 10;
+    if (other && other !== b) {
+      var r = other.getBoundingClientRect();
+      if (r.height) up = Math.round(window.innerHeight - r.top) + 8;
+    }
+    b.style.bottom = up + 'px';
   }
 
   function start() {
