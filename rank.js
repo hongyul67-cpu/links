@@ -1,7 +1,16 @@
 /* ══════════════════════════════════════════════════════════════
    rank.js — 학습도구 공용 계급(티어) · 랭크 포인트 위젯
    붙이는 법:  <script src="https://hongyul67-cpu.github.io/links/rank.js"
-                       data-tool="도구이름"></script>
+                       data-tool="도구이름" data-pace="class"></script>
+
+   data-pace — 이 도구를 얼마나 자주 쓰느냐에 따라 오르는 속도를 나눈다.
+     "class" (수업용)  — 개념·게임처럼 수업 시간에 한두 번 쓰고 마는 도구.
+                         몇 판 안 하므로 한 판에 많이 오른다. 만점 ≈ 290 RP.
+                         한 수업(대략 6판)이면 플래티넘~다이아에 닿는다.
+     "self"  (자습용)  — CBT·기출·실기 연습소처럼 학생이 알아서 반복하는 도구.
+                         꾸준히 하는 것이 목적이라 천천히 오른다. 만점 ≈ 95 RP.
+     안 적으면 "self" 로 본다(느린 쪽이 안전하다).
+     ※ 이미 쌓인 RP 는 건드리지 않는다. 앞으로 받는 점수만 이 배율을 탄다.
    쓰는 법:
      Rank.card()                  → 홈에 넣을 계급 카드 HTML
      Rank.badge()                 → 작은 배지 HTML (상단바 등)
@@ -16,6 +25,10 @@
 
   var TOOL = (document.currentScript && document.currentScript.dataset.tool) || document.title || 'tool';
   var KEY = 'rank_v1_' + TOOL;
+
+  /* 오르는 속도 — 위 설명 참고. 배율은 오르는 쪽과 깎이는 쪽에 똑같이 걸린다. */
+  var PACE = { 'class': 6, 'self': 2 };
+  var MUL = PACE[(document.currentScript && document.currentScript.dataset.pace) || 'self'] || PACE.self;
 
   /* ── 티어 정의 ─────────────────────────────────────────────
      min = 이 티어가 시작되는 RP. div = 세부 계급 수(로마숫자). */
@@ -65,18 +78,21 @@
     };
   }
 
-  /* 점수(0~100) → RP 증감 */
+  /* 점수(0~100) → RP 증감.
+     기본 폭은 그대로 두고 MUL(수업용 6 · 자습용 2)을 곱한다.
+     깎이는 쪽 상한에도 같은 배율을 걸어야 균형이 맞는다 —
+     오르는 것만 키우면 한 번 실수해도 잃는 것이 없어 의미가 없어진다. */
   function calcGain(score, st) {
-    var g = Math.round((score - 55) * 0.8);          // 55점이 본전
-    if (score >= 100) g += 12;                        // 퍼펙트 보너스
+    var g = Math.round((score - 55) * 0.8 * MUL);      // 55점이 본전
+    if (score >= 100) g += 12 * MUL;                   // 퍼펙트 보너스
     if (score >= 60) {
       var s = st.streak + 1;
-      if (s >= 3) g += Math.min(15, (s - 2) * 5);     // 3연승부터 보너스
+      if (s >= 3) g += Math.min(15 * MUL, (s - 2) * 5 * MUL);   // 3연승부터 보너스
     } else {
-      g = Math.max(g, -22);                           // 하락 상한
+      g = Math.max(g, -22 * MUL);                      // 하락 상한
       var t = tierOf(st.rp);
-      if (t.idx === 0) g = Math.max(g, -6);           // 아이언 보호
-      else if (t.idx === 1) g = Math.max(g, -12);
+      if (t.idx === 0) g = Math.max(g, -6 * MUL);      // 아이언 보호
+      else if (t.idx === 1) g = Math.max(g, -12 * MUL);
     }
     return g;
   }
