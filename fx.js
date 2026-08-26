@@ -131,6 +131,7 @@ function stackSnd(t){
   place();
   setTimeout(place,0);
   window.addEventListener("load",place);
+  window.addEventListener("resize",place);   /* 폰 회전·창 크기 바뀜 */
 }
 
 /* ── 소리 (교실을 생각해 기본 꺼짐) ── */
