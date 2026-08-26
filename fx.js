@@ -112,6 +112,25 @@ function inject(){
   t.addEventListener("click",function(){ setSound(!SOUND) });
   document.body.appendChild(t);
   paintSndBtn();
+  stackSnd(t);
+}
+
+/* 오른쪽 아래에 다른 공용 단추(class-mode.js 의 「🎓 수업모드」)가 이미 있으면 그 위로 올라간다.
+   backbar.js 가 왼쪽 아래에서 reset.js 를 피하는 방식과 같다.
+   class-mode.js 가 fx.js 보다 늦게 붙을 수도 있어 load 뒤에 한 번 더 재어 본다. */
+function stackSnd(t){
+  function place(){
+    var other=document.querySelector(".cm-launch");
+    var up=12;
+    if(other&&other!==t){
+      var r=other.getBoundingClientRect();
+      if(r.height) up=Math.round(window.innerHeight-r.top)+8;
+    }
+    t.style.bottom=up+"px";
+  }
+  place();
+  setTimeout(place,0);
+  window.addEventListener("load",place);
 }
 
 /* ── 소리 (교실을 생각해 기본 꺼짐) ── */
