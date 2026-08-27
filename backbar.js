@@ -28,6 +28,7 @@
   /* ── 가운데 내용을 화면의 70%까지 넓게 ───────────────────
      기본 폭(760~960px)이 큰 화면에서 너무 좁아 설명이 가운데로 몰려 보였다.
        · 1024px 이상 화면에서만 넓힌다(휴대폰·태블릿 세로는 그대로).
+       · 원래 더 넓은 도구는 줄이지 않는다(max-width 대신 min-width 로 바닥만 올림).
        · 수업모드(cm-on)·전자칠판(bd-open/board/teach-open)은 자기 폭이 따로 있으니 건드리지 않는다.
        · 인쇄할 때도 건드리지 않는다(@media screen).
        · 이 도구만 원래 폭으로 두려면 :  window.NO_WIDE = 1;  (이 스크립트보다 먼저)
@@ -41,7 +42,7 @@
     st.textContent =
       '@media screen and (min-width:1024px){'
       + 'body:not(.cm-on):not(.bd-open):not(.board):not(.teach-open) .wrap{'
-      + 'max-width:clamp(880px,70vw,1600px)!important;}'
+      + 'min-width:min(70vw,1600px);}'
       + '}';
     (document.head || document.documentElement).appendChild(st);
   })();
