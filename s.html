@@ -114,6 +114,9 @@ if(!DATA || !DATA.l || !DATA.l.length){
   /* exec: g(배포ID만) 있으면 앞뒤 붙여 복원, 없으면 r(전체주소·옛 링크 호환) */
   var BAKED_RC=DATA.g ? ("https://script.google.com/macros/s/"+DATA.g+"/exec") : (DATA.r||"");
   var ALLOW_RC=!!DATA.a;
+  /* f:1 — 수업용 「모두 같은 문제」. 도구 주소에 ?fix=1 을 붙여, 그날 연 학생 모두가
+     같은 문제·같은 보기를 받게 한다. (도구 쪽 fixorder.js 가 처리) */
+  var FIX=!!DATA.f;
   /* 압축용 배열 → 원래 형태로.
      v1: [emoji,name,desc,repo,url,cat,type]  ·  v2(간결): [emoji,name,repo,url,cat,type] (desc 없음) */
   var TOOLS=DATA.l.map(function(a){
@@ -141,6 +144,7 @@ if(!DATA || !DATA.l || !DATA.l.length){
       u+=(u.indexOf("?")<0?"?":"&")+"rc="+encodeURIComponent(rc);
       u+="&name=1";              // 이름은 항상 받음(누가 냈는지 알아야 하므로)
     }
+    if(FIX&&t.repo) u+=(u.indexOf("?")<0?"?":"&")+"fix=1";   // 모두 같은 문제
     return u;
   }
 

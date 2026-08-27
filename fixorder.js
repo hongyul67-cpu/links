@@ -89,13 +89,21 @@
     }
   };
 
+  /* 그냥 "켜기"를 뜻하는 값들. 허브가 붙이는 것은 fix=1 이다. */
+  var ON = { '1': 1, 'on': 1, 'yes': 1, 'true': 1 };
+
   var v = param();
   if (v !== null && v !== '' && v !== '0') {
-    /* 숫자를 직접 준 경우엔 그 값, 아니면 날짜 + 도구 주소로 만든다.
-       주소를 섞는 이유 — 같은 날 여러 도구를 써도 도구마다 다른 순서가 되게. */
-    var seed = /^\d+$/.test(v)
-      ? (parseInt(v, 10) >>> 0)
-      : hash(todayKey() + '|' + location.host + location.pathname);
+    var seed;
+    if (ON[String(v).toLowerCase()]) {
+      /* 날짜 + 도구 주소. 같은 날엔 모두 같은 문제, 다음 수업엔 자동으로 다른 문제.
+         주소를 섞는 이유 — 같은 날 여러 도구를 써도 도구마다 다른 순서가 되게. */
+      seed = hash(todayKey() + '|' + location.host + location.pathname);
+    } else if (/^\d+$/.test(v)) {
+      seed = parseInt(v, 10) >>> 0;      /* 값을 직접 준 경우 (반별로 다르게 줄 때) */
+    } else {
+      seed = hash(String(v));            /* 글자를 준 경우도 시드로 받아 준다 */
+    }
     API.seed = seed >>> 0;
     Math.random = mulberry32(API.seed);
     API.on = true;
