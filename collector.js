@@ -530,6 +530,114 @@
     });
   }
 
+  /* ── 평가 기준 보기 (화면 왼쪽 아래 구석 배지) ────────────────
+     루브릭이 있는 도구에만 저절로 생긴다. 학생도 "무엇을 평가하는지" 미리 볼 수 있어야
+     하므로 평가요소와 상·중·하 문구는 그대로 보여 준다.
+     관찰 포인트·성취기준 코드·점수 경계는 교사용이라 주소에 ?teacher=1 이 있을 때만 나온다.
+     자리: 왼쪽 아래(뒤로 버튼·기록 초기화 위로 쌓임) — 오른쪽 아래는 수업모드·소리·계급이 쓴다. */
+  function isTeacher() {
+    return (qp('teacher') || '') === '1';
+  }
+
+  function rubricCss() {
+    if (document.getElementById('rb-css')) return;
+    var st = document.createElement('style');
+    st.id = 'rb-css';
+    st.textContent = '' +
+      '#rb-btn{position:fixed;left:12px;bottom:12px;z-index:2147483000;' +
+        'font:600 13px/1 system-ui,"Malgun Gothic",sans-serif;padding:9px 12px;border-radius:999px;' +
+        'border:1px solid #cbd5e1;background:#fff;color:#0f172a;cursor:pointer;' +
+        'box-shadow:0 4px 14px rgba(0,0,0,.18)}' +
+      '#rb-btn:hover{background:#f1f5f9}' +
+      '.rb-card{background:#fff;color:#0f172a;width:100%;max-width:560px;max-height:80vh;overflow:auto;' +
+        'border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);padding:22px;box-sizing:border-box}' +
+      '.rb-card h3{margin:0 0 2px;font-size:19px}' +
+      '.rb-sub{margin:0 0 14px;font-size:12.5px;color:#64748b;line-height:1.5}' +
+      '.rb-c{border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;margin-bottom:10px}' +
+      '.rb-c b{font-size:14.5px}' +
+      '.rb-code{font-size:11.5px;color:#64748b;margin-left:6px}' +
+      '.rb-l{display:flex;gap:8px;margin-top:8px;font-size:13px;line-height:1.55}' +
+      '.rb-tag{flex:none;width:22px;height:22px;border-radius:6px;display:flex;align-items:center;' +
+        'justify-content:center;font-size:12px;font-weight:800;color:#fff}' +
+      '.rb-t1{background:#2563eb}.rb-t2{background:#0ea5e9}.rb-t3{background:#94a3b8}' +
+      '.rb-obs{margin-top:6px;font-size:12px;color:#b45309;background:#fffbeb;' +
+        'border-radius:8px;padding:6px 8px}' +
+      '.rb-close{margin-top:6px;width:100%;padding:11px;border:0;border-radius:10px;' +
+        'background:#e2e8f0;color:#334155;font-size:14px;font-weight:700;cursor:pointer}';
+    document.head.appendChild(st);
+  }
+
+  /* 왼쪽 아래에 이미 있는 버튼들(뒤로·기록 초기화) 위로 올라간다.
+     다른 위젯이 늦게 붙으므로 load·resize·잠시 뒤에 다시 잰다. */
+  function stackRb(btn) {
+    var top = window.innerHeight, sels = ['#bb-btn', '.tr-btn'];
+    for (var i = 0; i < sels.length; i++) {
+      var e = document.querySelector(sels[i]);
+      if (!e) continue;
+      var r = e.getBoundingClientRect();
+      if (r.height && r.top < top) top = r.top;
+    }
+    btn.style.bottom = (top < window.innerHeight ? (window.innerHeight - top + 8) : 12) + 'px';
+  }
+
+  function rubricPanel(rb) {
+    rubricCss();
+    var teacher = isTeacher();
+    var ov = document.createElement('div');
+    ov.className = 'rc-ov';
+    var h = '<div class="rb-card" role="dialog" aria-modal="true">' +
+      '<h3>📋 평가 기준</h3>' +
+      '<p class="rb-sub">' + esc(rb.tool || CFG.tool) +
+        (rb.subject ? ' · ' + esc(rb.subject) : '') +
+        (teacher && rb.source ? '<br>' + esc(rb.source) : '') +
+        '<br>무엇을 평가하는지 미리 보고 스스로 확인해 보세요.</p>';
+    (rb.criteria || []).forEach(function (c) {
+      h += '<div class="rb-c"><b>' + esc(c.name) + '</b>' +
+           (teacher && c.standard ? '<span class="rb-code">' + esc(c.standard) + '</span>' : '');
+      (c.levels || []).forEach(function (L, i) {
+        h += '<div class="rb-l"><span class="rb-tag rb-t' + (i + 1) + '">' + esc(L.level) + '</span>' +
+             '<span>' + esc(L.phrase || '') +
+             (teacher && Number(L.min) > 0 ? ' <span class="rb-code">' + esc(L.min) + '% 이상</span>' : '') +
+             '</span></div>';
+        /* 관찰 포인트는 교사용. 수준별로 있으면 그것을, 없으면 평가요소의 것을 한 번만 보여 준다. */
+        var ob = L.observe || (i === 0 ? c.observe : '');
+        if (teacher && ob) h += '<div class="rb-obs">👀 ' + esc(ob) + '</div>';
+      });
+      h += '</div>';
+    });
+    h += '<button class="rb-close" id="rb-close">닫기</button></div>';
+    ov.innerHTML = h;
+    document.body.appendChild(ov);
+    function close() { if (ov.parentNode) ov.parentNode.removeChild(ov); }
+    ov.querySelector('#rb-close').addEventListener('click', close);
+    ov.addEventListener('click', function (e) { if (e.target === ov) close(); });
+  }
+
+  function mountRubricBadge() {
+    loadRubric().then(function (rb) {
+      if (!rb || !rb.criteria || !rb.criteria.length) return;   // 루브릭 없는 도구엔 안 생긴다
+      if (document.getElementById('rb-btn')) return;
+      rubricCss();
+      injectCss();
+      var btn = document.createElement('button');
+      btn.id = 'rb-btn';
+      btn.type = 'button';
+      btn.textContent = '📋 평가 기준';
+      btn.addEventListener('click', function () { rubricPanel(rb); });
+      document.body.appendChild(btn);
+      stackRb(btn);
+      window.addEventListener('resize', function () { stackRb(btn); });
+      setTimeout(function () { stackRb(btn); }, 800);   // 늦게 붙는 위젯을 다시 잰다
+      setTimeout(function () { stackRb(btn); }, 2500);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', mountRubricBadge);
+  } else {
+    mountRubricBadge();
+  }
+
   /* ── 검증용 미리보기 (제출하지 않고 결과만 본다) ──────────────
      콘솔에서:  ResultCollector.__preview({mode:'종합시험', correct:9, total:10, retry:2})
      → 평가요소·수준·시트에 들어갈 열·세특 문장을 그대로 보여 준다.
