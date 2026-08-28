@@ -189,7 +189,8 @@
       if (v === null || v === undefined || isNaN(v)) return;
       var L = levelOf(c, v);
       if (!L) return;
-      hits.push({ name: c.name, level: L.level, phrase: L.phrase, value: v });
+      hits.push({ name: c.name, level: L.level, phrase: L.phrase, value: v,
+                  observe: L.observe || c.observe || '' });
       cols['[평가] ' + c.name] = L.level;
     });
     if (!hits.length) return null;   // 이 제출에 맞는 평가요소가 없으면 공용 문장으로 되돌아간다
@@ -220,7 +221,10 @@
       hits: hits, process: proc, cols: cols,
       names: hits.map(function (h) { return h.name; }).join(' · '),
       level: levels.join('·'),
-      evidence: ev.join(' · ')
+      evidence: ev.join(' · '),
+      /* 세특은 시험 점수가 아니라 교사의 관찰 기록이다.
+         제출 기록만으로는 초안까지가 한계이므로, 교사가 수업에서 무엇을 확인하면 되는지를 함께 보낸다. */
+      observe: hits.map(function (h) { return h.observe; }).filter(Boolean).join(' · ')
     };
   }
 
@@ -494,6 +498,7 @@
           criteria: J ? J.names : '',                 // 평가요소
           level: J ? J.level : '',                    // 성취수준 (상/중/하)
           evidence: J ? J.evidence : '',              // 수준 근거 (교사용, 숫자는 여기에만)
+          observe: J ? J.observe : '',                // 관찰 포인트 (교사가 수업에서 확인할 것)
           cols: J ? J.cols : null,                    // 도구별 [평가] 열 → 수준
           // 생기부(세특) 작성용 — 학생 입력 없이 활동·성취·태도로 자동 생성
           keywords: J ? rubricKeywords(rb, J, payload) : autoKeywords(payload),
@@ -538,6 +543,7 @@
         평가요소: J ? J.names : '(해당 없음)',
         성취수준: J ? J.level : '',
         수준근거: J ? J.evidence : '',
+        관찰포인트: J ? J.observe : '',
         시트열: J ? J.cols : {},
         키워드: J ? rubricKeywords(rb, J, payload) : autoKeywords(payload),
         세특문장: J ? rubricDraft(rb, J, payload) : autoDraft(payload)

@@ -126,7 +126,8 @@ function rcAppend(d) {
               H.score, H.correct, H.total, H.rate, H.wrong,
               '소요(초)', '도전 횟수', '계급', '기기',
               '평가요소', '성취수준', '수준 근거',
-              '활동 키워드(생기부용)', '세특 문장(초안)', '도구코드'];
+              '활동 키워드(생기부용)', '세특 문장(초안)',
+              '관찰 포인트(수업에서 확인)', '관찰 메모(교사 입력)', '도구코드'];
   var sh = sheetOf(toolName, base);
   ensureHeaders(sh, base);        // 예전에 만들어진 탭에도 새 열을 만들어 준다
 
@@ -155,6 +156,9 @@ function rcAppend(d) {
   row['수준 근거'] = String(d.evidence || '').slice(0, 200);
   row['활동 키워드(생기부용)'] = String(d.keywords || '').slice(0, 300);
   row['세특 문장(초안)']       = String(d.draft || '').slice(0, 500);
+  // 세특은 관찰 기록이다. 제출 기록은 초안까지이고, 교사가 수업에서 본 것을 옆 칸에 적어 확정한다.
+  row['관찰 포인트(수업에서 확인)'] = String(d.observe || '').slice(0, 300);
+  row['관찰 메모(교사 입력)']       = '';
   row['도구코드']  = String(d.code || '').slice(0, 40);
 
   // 도구별 평가 열 — 루브릭의 평가요소마다 "[평가] 이름" 열이 생기고 수준(상/중/하)이 들어간다.
