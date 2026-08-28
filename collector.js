@@ -238,7 +238,7 @@
   /* 재도전 판단 — 기준은 2회부터. 횟수가 늘수록 표현이 달라진다. 교사용 근거에만 쓴다. */
   function retryNote(n) {
     n = Number(n) || 1;
-    if (n >= 5) return '반복 연습 ' + n + '회';
+    if (n >= 3) return '반복 연습 ' + n + '회';
     if (n >= 2) return '재도전 ' + n + '회';
     return '첫 시도';
   }
@@ -560,7 +560,7 @@
             return el ? (el.value || '').trim().slice(0, 60) : '';
           })(),
           selfGap: (J && selfPick) ? selfGap(selfPick, J.level) : '',
-          retryNote: retryNote(payload.retry),        // 첫 시도 / 재도전 n회(2회~) / 반복 연습 n회(5회~)
+          retryNote: retryNote(payload.retry),        // 첫 시도 / 재도전 2회 / 반복 연습 n회(3회~)
           cols: J ? J.cols : null,                    // 도구별 [평가] 열 → 수준
           // 생기부(세특) 작성용 — 학생 입력 없이 활동·성취·태도로 자동 생성
           keywords: J ? rubricKeywords(rb, J, payload) : autoKeywords(payload),
