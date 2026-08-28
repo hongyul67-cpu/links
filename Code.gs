@@ -78,33 +78,91 @@ function findRow(sh, k) {
 }
 
 /* ===================== ① result-collector ===================== */
+
+/* 시트에 없는 열을 헤더 뒤에 만들어 준다.
+   sheetOf 는 탭이 "처음 생길 때"만 헤더를 쓰기 때문에, 도구가 새 열(예: [평가] 선의 종류)을
+   보내오면 이 함수가 없으면 값이 조용히 사라진다. */
+function ensureHeaders(sh, names) {
+  var lastCol = sh.getLastColumn();
+  var head = lastCol > 0 ? sh.getRange(1, 1, 1, lastCol).getValues()[0] : [];
+  var add = [];
+  for (var i = 0; i < names.length; i++) {
+    var n = names[i];
+    if (n && head.indexOf(n) < 0 && add.indexOf(n) < 0) add.push(n);
+  }
+  if (add.length) {
+    sh.getRange(1, head.length + 1, 1, add.length).setValues([add]).setFontWeight('bold');
+    head = head.concat(add);
+  }
+  return head;
+}
+
+/* {열이름: 값} 으로 받아 헤더 순서에 맞춰 한 줄 추가한다.
+   값을 순서대로 밀어 넣으면 도구마다 열이 다를 때 자리가 어긋난다. */
+function appendByHeader(sh, obj) {
+  var keys = [];
+  for (var k in obj) if (obj.hasOwnProperty(k)) keys.push(k);
+  var head = ensureHeaders(sh, keys);
+  var row = [];
+  for (var i = 0; i < head.length; i++) {
+    var v = obj[head[i]];
+    row.push(v === undefined || v === null ? '' : v);
+  }
+  sh.appendRow(row);
+}
+
 function rcAppend(d) {
   if (RC_SECRET && d.secret !== RC_SECRET) return out({ ok: false, error: 'unauthorized' });
   var toolName = String(d.tool || '기타').slice(0, 60);
-  // 도구가 labels를 보내면 그 용어로 열 이름을 만듦 (예: 블록뷰 → 정답수=완료 개수)
-  // ※ 탭이 처음 생성될 때만 반영됩니다. 이미 있는 탭의 헤더는 그대로예요.
+  // 도구가 labels를 보내면 그 용어로 공통 열 이름을 만듦 (예: 블록뷰 → 정답수=완료 개수)
   var L = d.labels || {};
-  var sh = sheetOf(toolName,
-    ['제출시각', '반', '번호', '이름', '학년', '학과',
-     '활동(파트)',
-     L.score || '점수', L.correct || '정답수', L.total || '총문항', L.rate || '정답률(%)',
-     L.wrong || '틀린 문제', '소요(초)', '도전 횟수', '계급', '기기',
-     '활동 키워드(생기부용)', '세특 문장(초안)']);
+  var H = {
+    time: '제출시각', cls: '반', num: '번호', name: '이름', grade: '학년', dept: '학과',
+    mode: '활동(파트)',
+    score: L.score || '점수', correct: L.correct || '정답수',
+    total: L.total || '총문항', rate: L.rate || '정답률(%)', wrong: L.wrong || '틀린 문제'
+  };
+  var base = [H.time, H.cls, H.num, H.name, H.grade, H.dept, H.mode,
+              H.score, H.correct, H.total, H.rate, H.wrong,
+              '소요(초)', '도전 횟수', '계급', '기기',
+              '평가요소', '성취수준', '수준 근거',
+              '활동 키워드(생기부용)', '세특 문장(초안)', '도구코드'];
+  var sh = sheetOf(toolName, base);
+  ensureHeaders(sh, base);        // 예전에 만들어진 탭에도 새 열을 만들어 준다
+
   var correct = numOf(d.correct), total = numOf(d.total);
   var rate = (total !== '' && total > 0) ? Math.round((correct / total) * 100) : '';
-  sh.appendRow([
-    new Date(), d.cls || '', d.num || '', d.name || '', d.grade || '', d.dept || '',
-    String(d.mode || '').slice(0, 80),
-    d.score === undefined ? '' : d.score,
-    correct, total, rate,
-    Array.isArray(d.wrong) ? d.wrong.join(' / ') : (d.wrong || ''),
-    d.durationSec === undefined ? '' : d.durationSec,
-    d.retry === undefined ? '' : d.retry,
-    String(d.tier || ''),
-    String(d.ua || '').slice(0, 60),
-    String(d.keywords || '').slice(0, 300),
-    String(d.draft || '').slice(0, 500)
-  ]);
+
+  var row = {};
+  row[H.time]    = new Date();
+  row[H.cls]     = d.cls || '';
+  row[H.num]     = d.num || '';
+  row[H.name]    = d.name || '';
+  row[H.grade]   = d.grade || '';
+  row[H.dept]    = d.dept || '';
+  row[H.mode]    = String(d.mode || '').slice(0, 80);
+  row[H.score]   = d.score === undefined ? '' : d.score;
+  row[H.correct] = correct;
+  row[H.total]   = total;
+  row[H.rate]    = rate;
+  row[H.wrong]   = Array.isArray(d.wrong) ? d.wrong.join(' / ') : (d.wrong || '');
+  row['소요(초)']  = d.durationSec === undefined ? '' : d.durationSec;
+  row['도전 횟수'] = d.retry === undefined ? '' : d.retry;
+  row['계급']      = String(d.tier || '');
+  row['기기']      = String(d.ua || '').slice(0, 60);
+  row['평가요소']  = String(d.criteria || '').slice(0, 200);
+  row['성취수준']  = String(d.level || '').slice(0, 40);
+  row['수준 근거'] = String(d.evidence || '').slice(0, 200);
+  row['활동 키워드(생기부용)'] = String(d.keywords || '').slice(0, 300);
+  row['세특 문장(초안)']       = String(d.draft || '').slice(0, 500);
+  row['도구코드']  = String(d.code || '').slice(0, 40);
+
+  // 도구별 평가 열 — 루브릭의 평가요소마다 "[평가] 이름" 열이 생기고 수준(상/중/하)이 들어간다.
+  // 교과마다 열이 달라지는 곳이 여기다. 도구가 늘어나도 이 코드는 고치지 않는다.
+  var cols = d.cols || {};
+  for (var k in cols) if (cols.hasOwnProperty(k)) row[String(k).slice(0, 60)] = cols[k];
+
+  appendByHeader(sh, row);
   return out({ ok: true });
 }
 

@@ -132,6 +132,126 @@
     return s.trim();
   }
 
+  /* ── 평가 루브릭 (rubric.json) ────────────────────────────────
+     도구 저장소 최상위에 rubric.json 이 있으면, 위의 공용 문장 대신
+     그 도구의 루브릭으로 수준(상/중/하)을 판정하고 문구를 만든다.
+     · 파일이 없으면 조용히 넘어간다 — 루브릭이 없는 도구도 지금 그대로 동작한다.
+     · criteria 이름이 그대로 그 도구 시트의 [평가] 열이 된다(교과마다 열이 달라지는 방법).
+     자세한 규칙은 WORKPLAN-루브릭.md 3장. */
+  var RUBRIC = null, rubricPromise = null;
+
+  function loadRubric() {
+    if (rubricPromise) return rubricPromise;
+    var url;
+    try { url = new URL('rubric.json', location.href).href; }
+    catch (e) { rubricPromise = Promise.resolve(null); return rubricPromise; }
+    rubricPromise = fetch(url, { cache: 'no-cache' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) { RUBRIC = j || null; return RUBRIC; })
+      .catch(function () { return null; });
+    return rubricPromise;
+  }
+
+  function rateOf(p) {
+    var total = Number(p.total) || 0, correct = Number(p.correct) || 0;
+    return total > 0 ? Math.round(correct / total * 100) : null;
+  }
+
+  function measureVal(c, p, rate) {
+    var m = c.measure || 'rate';
+    if (m === 'score')    return p.score === undefined ? null : Number(p.score);
+    if (m === 'progress') return p.progress === undefined ? null : Number(p.progress);
+    return rate;
+  }
+
+  /* levels 는 min 내림차순(상 → 중 → 하). 값이 min 이상인 첫 단계를 쓴다. */
+  function levelOf(c, v) {
+    var ls = c.levels || [];
+    for (var i = 0; i < ls.length; i++) if (v >= (Number(ls[i].min) || 0)) return ls[i];
+    return ls.length ? ls[ls.length - 1] : null;
+  }
+
+  /* match.mode 가 있으면 그 활동에서 제출했을 때만 적용(부분일치, 배열 가능) */
+  function matchesMode(c, p) {
+    var m = c.match || {};
+    if (!m.mode) return true;
+    var mode = String(p.mode || ''), want = [].concat(m.mode);
+    for (var i = 0; i < want.length; i++) if (mode.indexOf(want[i]) >= 0) return true;
+    return false;
+  }
+
+  function judge(rb, p) {
+    if (!rb || !rb.criteria || !rb.criteria.length) return null;
+    var rate = rateOf(p), hits = [], cols = {};
+    rb.criteria.forEach(function (c) {
+      if (!matchesMode(c, p)) return;
+      var v = measureVal(c, p, rate);
+      if (v === null || v === undefined || isNaN(v)) return;
+      var L = levelOf(c, v);
+      if (!L) return;
+      hits.push({ name: c.name, level: L.level, phrase: L.phrase, value: v });
+      cols['[평가] ' + c.name] = L.level;
+    });
+    if (!hits.length) return null;   // 이 제출에 맞는 평가요소가 없으면 공용 문장으로 되돌아간다
+
+    var proc = [];
+    (rb.process || []).forEach(function (q) {
+      var w = q.when || {}, total = Number(p.total) || 0, sec = Number(p.durationSec) || 0;
+      var perQ = (total > 0 && sec > 0) ? sec / total : null;
+      if (w.retry !== undefined && !(Number(p.retry) >= Number(w.retry))) return;
+      if (w.rateMin !== undefined && !(rate !== null && rate >= Number(w.rateMin))) return;
+      if (w.durationPerQMin !== undefined && !(perQ !== null && perQ >= Number(w.durationPerQMin))) return;
+      if (w.durationPerQMax !== undefined && !(perQ !== null && perQ <= Number(w.durationPerQMax))) return;
+      if (q.phrase) proc.push(q.phrase);
+    });
+
+    /* 교사용 근거 — 숫자는 여기에만 남기고 생기부 문장에는 넣지 않는다 */
+    var ev = [];
+    if (p.mode) ev.push('활동 ' + p.mode);
+    if (rate !== null) ev.push('정답률 ' + rate + '%(' + (Number(p.correct) || 0) + '/' + (Number(p.total) || 0) + ')');
+    if (p.score !== undefined) ev.push('점수 ' + p.score);
+    if (Number(p.retry) >= 2) ev.push('도전 ' + p.retry + '회');
+
+    var levels = [];
+    hits.forEach(function (h) { if (levels.indexOf(h.level) < 0) levels.push(h.level); });
+
+    return {
+      code: rb.code || '',
+      hits: hits, process: proc, cols: cols,
+      names: hits.map(function (h) { return h.name; }).join(' · '),
+      level: levels.join('·'),
+      evidence: ev.join(' · ')
+    };
+  }
+
+  /* 문장 앞머리 주제 — 루브릭이 판정한 평가요소 이름을 쓴다.
+     mode 문자열("도면읽기 선의종류")보다 교과 용어("선의 종류")가 세특에 어울린다. */
+  function rubricTopic(rb, J, p) {
+    return (J.hits[0] && J.hits[0].name) || topicOf(p.mode) || rb.subject || '';
+  }
+
+  function rubricKeywords(rb, J, p) {
+    var topic = rubricTopic(rb, J, p);
+    var k = [];
+    if (topic) k.push(topic + ' 학습');
+    J.hits.forEach(function (h) { if (h.phrase) k.push(h.phrase); });
+    J.process.forEach(function (s) { k.push(s); });
+    if (rb.competencies) k = k.concat([].concat(rb.competencies));
+    return k.join(' · ');
+  }
+
+  function rubricDraft(rb, J, p) {
+    var topic = rubricTopic(rb, J, p);
+    var s = topic ? (topic + ' 학습 활동에 참여하여 ') : '수업 활동에 참여하여 ';
+    var body = J.hits.map(function (h) { return h.phrase; }).filter(Boolean);
+    s += body.join('. ');
+    if (body.length) s += '. ';
+    if (J.process.length) s += J.process.join('. ') + '. ';
+    if (rb.competencies && rb.competencies.length)
+      s += [].concat(rb.competencies).join('·') + ' 역량을 기름.';
+    return s.replace(/\s{2,}/g, ' ').trim();
+  }
+
   var LS_KEY = 'rc_student';   // 마지막 반/번호 기억
 
   // ── 스타일 주입 ─────────────────────────────
@@ -198,6 +318,7 @@
   function attach(anchor, getPayload, opts) {
     opts = opts || {};
     if (!anchor || !anchor.parentNode) return null;
+    loadRubric();   // 제출 버튼이 보일 때 미리 읽어 둔다(없으면 조용히 넘어감)
 
     var id = opts.id || 'rcBtn';
     var old = document.getElementById(id);
@@ -239,6 +360,7 @@
   function open(payload) {
     payload = payload || {};
     injectCss();
+    loadRubric();   // attach 를 안 쓰고 open 을 직접 부르는 도구를 위해 여기서도 미리 읽는다
 
     var last = loadLast();
 
@@ -348,34 +470,44 @@
       elMsg.className = 'rc-msg';
       elMsg.textContent = '전송 중…';
 
-      var body = {
-        tool: CFG.tool,
-        cls: cls,
-        num: numV,
-        name: nameV,
-        grade: gradeV,
-        dept: deptV,
-        mode: payload.mode,        // 어느 파트에서 제출했는지 (예: 선의 종류 — 오류 찾기)
-        score: payload.score,
-        correct: payload.correct,
-        total: payload.total,
-        wrong: payload.wrong,
-        durationSec: payload.durationSec,
-        retry: payload.retry,      // 같은 파트를 몇 번째 푸는지
-        tier: payload.tier,        // 계급
-        labels: payload.labels,   // 도구별 시트 열 이름(선택). 탭이 처음 만들어질 때만 반영
-        // 생기부(세특) 작성용 — 학생 입력 없이 활동·성취·태도로 자동 생성
-        keywords: autoKeywords(payload),
-        draft: autoDraft(payload),
-        ua: navigator.userAgent,
-        secret: CFG.secret
-      };
+      loadRubric().then(function (rb) {
+        var J = judge(rb, payload);   // 루브릭이 없거나 이 활동에 맞는 평가요소가 없으면 null
 
-      // Content-Type을 text/plain으로 보내 CORS preflight를 피함 (Apps Script 표준 패턴)
-      fetch(CFG.endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify(body)
+        var body = {
+          tool: CFG.tool,
+          cls: cls,
+          num: numV,
+          name: nameV,
+          grade: gradeV,
+          dept: deptV,
+          mode: payload.mode,        // 어느 파트에서 제출했는지 (예: 선의 종류 — 오류 찾기)
+          score: payload.score,
+          correct: payload.correct,
+          total: payload.total,
+          wrong: payload.wrong,
+          durationSec: payload.durationSec,
+          retry: payload.retry,      // 같은 파트를 몇 번째 푸는지
+          tier: payload.tier,        // 계급
+          labels: payload.labels,   // 공통 열 이름 바꾸기(선택). 탭이 처음 만들어질 때만 반영
+          // 루브릭 판정 — 없으면 빈 값이라 시트 열만 비어 있고 나머지는 그대로 동작한다
+          code: J ? J.code : (rb && rb.code) || '',   // 구별 코드 (예: jedo.domyeon)
+          criteria: J ? J.names : '',                 // 평가요소
+          level: J ? J.level : '',                    // 성취수준 (상/중/하)
+          evidence: J ? J.evidence : '',              // 수준 근거 (교사용, 숫자는 여기에만)
+          cols: J ? J.cols : null,                    // 도구별 [평가] 열 → 수준
+          // 생기부(세특) 작성용 — 학생 입력 없이 활동·성취·태도로 자동 생성
+          keywords: J ? rubricKeywords(rb, J, payload) : autoKeywords(payload),
+          draft: J ? rubricDraft(rb, J, payload) : autoDraft(payload),
+          ua: navigator.userAgent,
+          secret: CFG.secret
+        };
+
+        // Content-Type을 text/plain으로 보내 CORS preflight를 피함 (Apps Script 표준 패턴)
+        return fetch(CFG.endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(body)
+        });
       })
         .then(function (r) { return r.json().catch(function () { return { ok: true }; }); })
         .then(function (res) {
@@ -393,5 +525,30 @@
     });
   }
 
-  window.ResultCollector = { open: open, attach: attach, hasEndpoint: hasEndpoint, bumpTry: bumpTry, config: CFG };
+  /* ── 검증용 미리보기 (제출하지 않고 결과만 본다) ──────────────
+     콘솔에서:  ResultCollector.__preview({mode:'종합시험', correct:9, total:10, retry:2})
+     → 평가요소·수준·시트에 들어갈 열·세특 문장을 그대로 보여 준다.
+     루브릭을 새로 쓴 뒤 상·중·하 세 경우를 이걸로 확인한다(WORKPLAN-루브릭.md 7장). */
+  function preview(payload) {
+    payload = payload || {};
+    return loadRubric().then(function (rb) {
+      var J = judge(rb, payload);
+      var r = {
+        루브릭: rb ? (rb.code || '(code 없음)') + ' / ' + (rb.tool || '') : '없음 (공용 문장 사용)',
+        평가요소: J ? J.names : '(해당 없음)',
+        성취수준: J ? J.level : '',
+        수준근거: J ? J.evidence : '',
+        시트열: J ? J.cols : {},
+        키워드: J ? rubricKeywords(rb, J, payload) : autoKeywords(payload),
+        세특문장: J ? rubricDraft(rb, J, payload) : autoDraft(payload)
+      };
+      try { console.log(r); } catch (e) {}
+      return r;
+    });
+  }
+
+  window.ResultCollector = {
+    open: open, attach: attach, hasEndpoint: hasEndpoint, bumpTry: bumpTry, config: CFG,
+    __preview: preview, __rubric: loadRubric
+  };
 })();
