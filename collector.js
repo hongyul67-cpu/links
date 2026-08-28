@@ -206,16 +206,16 @@
       if (q.phrase) proc.push(q.phrase);
     });
 
+    var levels = [];
+    hits.forEach(function (h) { if (levels.indexOf(h.level) < 0) levels.push(h.level); });
+
     /* 교사용 근거 — 숫자는 여기에만 남기고 생기부 문장에는 넣지 않는다 */
     var ev = [];
     if (p.mode) ev.push('활동 ' + p.mode);
     ev.push(retryNote(p.retry));
     if (rate !== null) ev.push('정답률 ' + rate + '%(' + (Number(p.correct) || 0) + '/' + (Number(p.total) || 0) + ')');
     if (p.score !== undefined) ev.push('점수 ' + p.score);
-    if (Number(p.retry) >= 2) ev.push('도전 ' + p.retry + '회');
-
-    var levels = [];
-    hits.forEach(function (h) { if (levels.indexOf(h.level) < 0) levels.push(h.level); });
+    if (Number(p.retry) >= 2 && levels[0] !== '하') ev.push('반복 뒤 도달');
 
     return {
       code: rb.code || '',
@@ -235,11 +235,11 @@
     return (J.hits[0] && J.hits[0].name) || topicOf(p.mode) || rb.subject || '';
   }
 
-  /* 재도전 판단 — 몇 번째 시도인지를 한 낱말로. 교사용 근거에만 쓴다. */
+  /* 재도전 판단 — 기준은 2회부터. 횟수가 늘수록 표현이 달라진다. 교사용 근거에만 쓴다. */
   function retryNote(n) {
     n = Number(n) || 1;
-    if (n >= 4) return '반복 연습 ' + n + '회';
-    if (n >= 2) return '다시 도전 ' + n + '회';
+    if (n >= 5) return '반복 연습 ' + n + '회';
+    if (n >= 2) return '재도전 ' + n + '회';
     return '첫 시도';
   }
 
@@ -560,7 +560,7 @@
             return el ? (el.value || '').trim().slice(0, 60) : '';
           })(),
           selfGap: (J && selfPick) ? selfGap(selfPick, J.level) : '',
-          retryNote: retryNote(payload.retry),        // 첫 시도 / 다시 도전 n회 / 반복 연습 n회
+          retryNote: retryNote(payload.retry),        // 첫 시도 / 재도전 n회(2회~) / 반복 연습 n회(5회~)
           cols: J ? J.cols : null,                    // 도구별 [평가] 열 → 수준
           // 생기부(세특) 작성용 — 학생 입력 없이 활동·성취·태도로 자동 생성
           keywords: J ? rubricKeywords(rb, J, payload) : autoKeywords(payload),
