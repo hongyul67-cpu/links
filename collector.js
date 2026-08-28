@@ -209,6 +209,7 @@
     /* 교사용 근거 — 숫자는 여기에만 남기고 생기부 문장에는 넣지 않는다 */
     var ev = [];
     if (p.mode) ev.push('활동 ' + p.mode);
+    ev.push(retryNote(p.retry));
     if (rate !== null) ev.push('정답률 ' + rate + '%(' + (Number(p.correct) || 0) + '/' + (Number(p.total) || 0) + ')');
     if (p.score !== undefined) ev.push('점수 ' + p.score);
     if (Number(p.retry) >= 2) ev.push('도전 ' + p.retry + '회');
@@ -234,6 +235,14 @@
     return (J.hits[0] && J.hits[0].name) || topicOf(p.mode) || rb.subject || '';
   }
 
+  /* 재도전 판단 — 몇 번째 시도인지를 한 낱말로. 교사용 근거에만 쓴다. */
+  function retryNote(n) {
+    n = Number(n) || 1;
+    if (n >= 4) return '반복 연습 ' + n + '회';
+    if (n >= 2) return '다시 도전 ' + n + '회';
+    return '첫 시도';
+  }
+
   function rubricKeywords(rb, J, p) {
     var topic = rubricTopic(rb, J, p);
     var k = [];
@@ -242,6 +251,15 @@
     J.process.forEach(function (s) { k.push(s); });
     if (rb.competencies) k = k.concat([].concat(rb.competencies));
     return k.join(' · ');
+  }
+
+  /* 자기평가와 판정을 견준다 — 교사가 관찰할 지점을 좁혀 준다. */
+  var ORDER = { '하': 0, '중': 1, '상': 2 };
+  function selfGap(self, level) {
+    var a = ORDER[self], b = ORDER[String(level).split('·')[0]];
+    if (a === undefined || b === undefined) return '';
+    if (a === b) return '일치';
+    return a > b ? '자신을 높게 봄' : '자신을 낮게 봄';
   }
 
   function rubricDraft(rb, J, p) {
@@ -277,7 +295,14 @@
     '.rc-cancel{background:#e2e8f0;color:#334155}' +
     '.rc-msg{margin-top:12px;font-size:13px;text-align:center;min-height:18px}' +
     '.rc-msg.err{color:#dc2626}' +
-    '.rc-msg.ok{color:#16a34a;font-weight:700}';
+    '.rc-msg.ok{color:#16a34a;font-weight:700}' +
+    '.rc-self{background:#eef2ff;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:12.5px;color:#3730a3}' +
+    '.rc-selfb{display:flex;gap:6px;margin-top:8px}' +
+    '.rc-selfb button{flex:1;padding:8px;font-size:14px;font-weight:700;border:1px solid #c7d2fe;' +
+      'background:#fff;color:#3730a3;border-radius:8px;cursor:pointer}' +
+    '.rc-selfb button.on{background:#6366f1;color:#fff;border-color:#6366f1}' +
+    '#rc-selfnote{width:100%;box-sizing:border-box;margin-top:8px;padding:9px 10px;font-size:13px;' +
+      'border:1px solid #c7d2fe;border-radius:8px;background:#fff;color:#0f172a}';
 
   function injectCss() {
     if (document.getElementById('rc-css')) return;
@@ -413,11 +438,17 @@
 
     var memoField = '';
 
+    /* 자기평가 — 루브릭이 있으면 "스스로 보기" 한 줄이 뜬다(선택 사항).
+       세특은 관찰 기록이라, 학생이 스스로 어떻게 봤는지가 교사의 관찰과 함께 남아야 쓸모가 있다. */
+    var selfPick = '';
+    var selfField = '<div id="rc-self-wrap"></div>';
+
     ov.innerHTML =
       '<div class="rc-card" role="dialog" aria-modal="true">' +
         '<h3>결과 제출</h3>' +
         '<p class="rc-sub">' + esc(CFG.tool) + '</p>' +
         summary +
+        selfField +
         nameField +
         gradeDeptRow +
         '<div class="rc-row">' +
@@ -448,6 +479,28 @@
       var elCnt = ov.querySelector('#rc-cnt');
       elMemo.addEventListener('input', function () { if (elCnt) elCnt.textContent = elMemo.value.length; });
     }
+
+    /* 루브릭이 늦게 로드돼도 창은 먼저 뜨므로, 준비되면 그때 자기평가 줄을 끼워 넣는다. */
+    loadRubric().then(function (rb) {
+      var J = judge(rb, payload);
+      var wrap = ov.querySelector('#rc-self-wrap');
+      if (!J || !wrap) return;
+      wrap.innerHTML =
+        '<div class="rc-self"><b>스스로 보기</b> — ' + esc(J.names) + '<div class="rc-selfb">' +
+        ['상', '중', '하'].map(function (lv) {
+          return '<button type="button" data-lv="' + lv + '">' + lv + '</button>';
+        }).join('') + '</div>' +
+        '<input id="rc-selfnote" type="text" maxlength="60" placeholder="한 줄 기록 — 어려웠던 점·다음에 해 볼 것 (선택)">' +
+        '</div>';
+      wrap.addEventListener('click', function (e) {
+        var b = e.target.closest ? e.target.closest('button[data-lv]') : null;
+        if (!b) return;
+        selfPick = (selfPick === b.getAttribute('data-lv')) ? '' : b.getAttribute('data-lv');
+        [].forEach.call(wrap.querySelectorAll('button[data-lv]'), function (x) {
+          x.className = (x.getAttribute('data-lv') === selfPick) ? 'on' : '';
+        });
+      });
+    });
 
     setTimeout(function () { (CFG.askName && elName ? elName : elNum).focus(); }, 50);
 
@@ -499,6 +552,15 @@
           level: J ? J.level : '',                    // 성취수준 (상/중/하)
           evidence: J ? J.evidence : '',              // 수준 근거 (교사용, 숫자는 여기에만)
           observe: J ? J.observe : '',                // 관찰 포인트 (교사가 수업에서 확인할 것)
+          self: selfPick,                             // 학생이 스스로 매긴 수준(선택)
+          /* 학생이 직접 쓴 한 줄. 시트에 참고로만 남기고 세특 문장에는 넣지 않는다
+             — 세특은 교사의 관찰·기록이어야 하기 때문이다. */
+          selfNote: (function () {
+            var el = ov.querySelector('#rc-selfnote');
+            return el ? (el.value || '').trim().slice(0, 60) : '';
+          })(),
+          selfGap: (J && selfPick) ? selfGap(selfPick, J.level) : '',
+          retryNote: retryNote(payload.retry),        // 첫 시도 / 다시 도전 n회 / 반복 연습 n회
           cols: J ? J.cols : null,                    // 도구별 [평가] 열 → 수준
           // 생기부(세특) 작성용 — 학생 입력 없이 활동·성취·태도로 자동 생성
           keywords: J ? rubricKeywords(rb, J, payload) : autoKeywords(payload),
