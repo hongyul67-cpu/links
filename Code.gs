@@ -29,6 +29,11 @@
 
 var RC_SECRET = '';   // result-collector 암호(선택). 비우면 검사 안 함.
 
+/* 이 코드의 판 번호. 선생님이 자기 /exec 주소를 브라우저에 그냥 열면
+   "최신인지 옛 버전인지" 한눈에 보이게 하려고 둔다.
+   → Code.gs 를 고칠 때마다 날짜를 올릴 것. guide.html 이 이 값을 읽어 비교한다. */
+var CODE_VERSION = '2026-08-29';
+
 /* ===================== 라우팅 ===================== */
 function doPost(e) {
   var lock = LockService.getScriptLock();
@@ -51,7 +56,37 @@ function doGet(e) {
   if (p.action === 'load') return out(cbtLoadState(p.cls, p.name), p.callback); // CBT 이어하기
   if (p.action === 'get')  return out(tdpGet(p.cls, p.name), p.callback);       // 3D 이어하기
   if (p.action === 'save') { tdpSave(p); return out({ ok: true }, p.callback); } // 3D GET 저장
-  return out({ ok: true, msg: 'unified collector alive' }, p.callback);
+  if (p.action === 'version' || p.callback) {
+    return out({ ok: true, version: CODE_VERSION, rubric: true }, p.callback);
+  }
+  return statusPage();   // 주소를 그냥 열었을 때 — 사람이 읽는 확인 화면
+}
+
+/* 선생님이 자기 /exec 주소를 브라우저 주소창에 붙여넣고 열면 나오는 화면.
+   "붙여넣기 → 저장 → 새 버전 배포" 를 제대로 했는지 이 화면 하나로 확인한다.
+   (옛 버전이 배포돼 있으면 이 화면 대신 {"ok":true,"msg":"..."} 같은 글자만 보인다.) */
+function statusPage() {
+  var name = '';
+  try { name = ss().getName(); } catch (e) {}
+  var html =
+    '<!doctype html><meta charset="utf-8">' +
+    '<meta name="viewport" content="width=device-width,initial-scale=1">' +
+    '<div style="font-family:system-ui,\'Malgun Gothic\',sans-serif;max-width:460px;margin:40px auto;' +
+    'padding:26px;border-radius:16px;background:#f0fdf4;border:1px solid #bbf7d0;color:#14532d;line-height:1.7">' +
+    '<div style="font-size:44px;line-height:1">✅</div>' +
+    '<h2 style="margin:6px 0 4px;font-size:20px">최신 코드가 배포되어 있어요</h2>' +
+    '<p style="margin:0 0 16px;color:#3f6212;font-size:14px">이 주소를 학생 링크 만들 때 쓰시면 됩니다.</p>' +
+    '<table style="width:100%;font-size:14px;border-collapse:collapse">' +
+    '<tr><td style="padding:5px 0;color:#4d7c0f">판 번호</td><td style="text-align:right;font-weight:700">' + CODE_VERSION + '</td></tr>' +
+    (name ? '<tr><td style="padding:5px 0;color:#4d7c0f">연결된 시트</td><td style="text-align:right;font-weight:700">' + name + '</td></tr>' : '') +
+    '<tr><td style="padding:5px 0;color:#4d7c0f">생기부·루브릭 칸</td><td style="text-align:right;font-weight:700">준비됨</td></tr>' +
+    '</table>' +
+    '<p style="margin:16px 0 0;font-size:12.5px;color:#4d7c0f">' +
+    '이 화면이 아니라 <b>{"ok":true …}</b> 같은 글자만 보이면 <b>옛 코드</b>가 배포된 것입니다 — 안내대로 다시 붙여넣고 <b>새 버전</b>으로 배포해 주세요.</p>' +
+    '</div>';
+  return HtmlService.createHtmlOutput(html)
+    .setTitle('결과수집 연결 확인')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 /* ===================== 공통 유틸 ===================== */

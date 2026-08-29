@@ -32,12 +32,47 @@
   details{margin-top:10px;background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:0 12px}
   summary{cursor:pointer;font-weight:700;font-size:13.5px;padding:11px 0;color:var(--brand)}
   details p,details li{font-size:13px}
+  /* 이미 쓰고 계신 분 — 업데이트 카드 */
+  .upd{background:#fffbeb;border:2px solid #fcd34d;border-radius:14px;padding:16px;margin-bottom:18px}
+  .upd h2{margin:0 0 2px;font-size:17px;color:#92400e}
+  .upd .why{font-size:13.5px;color:#a16207;margin:0 0 12px}
+  .upd ol{margin:0;padding-left:20px;font-size:14.5px}
+  .upd ol li{margin:7px 0}
+  .chk{display:flex;gap:7px;margin-top:9px}
+  .chk input{flex:1;min-width:0;border:1px solid #cbd5e1;border-radius:9px;padding:10px;font-size:13px}
+  .chk button{border:0;border-radius:9px;padding:10px 14px;font-weight:800;font-size:13.5px;cursor:pointer;background:#0ea5e9;color:#fff;white-space:nowrap}
+  .first{font-size:13.5px;color:var(--sub);margin:26px 0 10px;padding-top:16px;border-top:2px dashed var(--line);font-weight:700}
 </style>
 </head>
 <body>
 <div class="wrap">
   <h1>📥 결과수집 설정 가이드</h1>
   <p class="lead">학생들이 학습도구를 풀면, 결과가 <b>내 구글 시트</b>에 자동으로 쌓이게 만듭니다.</p>
+  <div class="upd">
+    <h2>🔁 이미 쓰고 계신 분 — 업데이트 (2분)</h2>
+    <p class="why">시트는 그대로 두고 <b>코드만 새로 붙여넣으면</b> 됩니다. 새로 만들 것 없어요.
+      이걸 해야 <b>성취수준(상/중/하)·관찰 포인트</b> 칸이 생깁니다.</p>
+    <ol>
+      <li>아래 <b>코드 복사하기</b> 누르기</li>
+      <li>내 시트 → <span class="path">확장 프로그램 → Apps Script</span> →
+        화면 코드를 <b>전부 지우고</b> 붙여넣기 → <b class="hl">저장 💾</b></li>
+      <li><span class="path">배포 → 배포 관리 → ✏(연필) → 버전 “새 버전” → 배포</span></li>
+    </ol>
+    <button class="copy" id="copyBtn2">📋 코드 복사하기</button>
+
+    <p class="tip" style="margin-top:14px"><b>제대로 됐는지 확인</b> — 내 <span class="path">.../exec</span> 주소를 넣고 눌러 보세요.
+      <b>초록색 “최신 코드가 배포되어 있어요”</b> 화면이 뜨면 끝입니다.</p>
+    <div class="chk">
+      <input id="chkUrl" type="url" placeholder="https://script.google.com/.../exec" inputmode="url">
+      <button id="chkBtn">확인</button>
+    </div>
+    <p class="tip" id="chkMsg"></p>
+    <p class="tip">주소가 기억 안 나면 Apps Script 의 <span class="path">배포 → 배포 관리</span> 에 적혀 있어요.
+      학생 링크(<span class="path">?rc=</span> 뒤 주소)와 같은 주소입니다.</p>
+  </div>
+
+  <p class="first">아래는 <b>처음 설정하시는 분</b>만 보시면 됩니다 ↓</p>
+
   <div class="callout">💻 <b>1~4단계는 컴퓨터로 딱 한 번만</b> 하면 돼요(5분). 그 뒤 학생 링크 보내기·결과 보기는 폰으로 됩니다. <br>※ "AppSheet" 앱은 필요 없어요. 지우셔도 됩니다.</div>
 
   <div class="step">
@@ -113,7 +148,7 @@
   // 최신 Code.gs를 같은 사이트에서 직접 불러와 항상 일치시킴 (통합 백엔드)
   var CODE = '';
   var codeEl = document.getElementById('code');
-  var btn = document.getElementById('copyBtn');
+  var btns = [document.getElementById('copyBtn'), document.getElementById('copyBtn2')];
 
   codeEl.value = '불러오는 중…';
   fetch('./Code.gs')
@@ -121,19 +156,58 @@
     .then(function (t) { CODE = t; codeEl.value = t; })
     .catch(function () {
       codeEl.value = 'Code.gs를 못 불러왔어요. 담당자에게 Code.gs 파일을 요청하세요.';
-      btn.disabled = true;
+      btns.forEach(function (b) { if (b) b.disabled = true; });
     });
 
-  btn.addEventListener('click', function () {
-    if (!CODE) return;
-    navigator.clipboard.writeText(CODE).then(function () {
-      btn.textContent = '복사됐어요 ✓'; btn.className = 'copy done';
-      setTimeout(function () { btn.textContent = '코드 복사하기'; btn.className = 'copy'; }, 1600);
-    }).catch(function () {
-      codeEl.focus(); codeEl.select();
-      btn.textContent = '직접 복사(Ctrl+C)';
+  btns.forEach(function (btn) {
+    if (!btn) return;
+    var label = btn.textContent;
+    btn.addEventListener('click', function () {
+      if (!CODE) return;
+      navigator.clipboard.writeText(CODE).then(function () {
+        btn.textContent = '복사됐어요 ✓'; btn.className = 'copy done';
+        setTimeout(function () { btn.textContent = label; btn.className = 'copy'; }, 1600);
+      }).catch(function () {
+        /* 브라우저가 복사를 막을 때 — 코드 칸으로 데려가서 직접 복사하게 한다.
+           (위쪽 업데이트 카드에서 누르면 코드 칸이 화면 밖이라 안내 없이 튀어 보인다) */
+        codeEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        codeEl.focus(); codeEl.select();
+        btn.textContent = '아래 칸에서 Ctrl+C';
+        setTimeout(function () { btn.textContent = label; }, 3000);
+      });
     });
   });
+
+  /* 「확인」 — 넣은 주소를 새 탭으로 연다.
+     구글 Apps Script 는 다른 사이트에서 응답을 읽는 것(CORS)을 막으므로,
+     여기서 결과를 대신 읽어 줄 수는 없다. 그래서 주소를 열어 선생님이 눈으로 보게 한다. */
+  (function () {
+    var i = document.getElementById('chkUrl');
+    var b = document.getElementById('chkBtn');
+    var m = document.getElementById('chkMsg');
+    if (!i || !b) return;
+
+    try { var last = localStorage.getItem('rc_exec'); if (last) i.value = last; } catch (e) {}
+
+    b.addEventListener('click', function () {
+      var u = (i.value || '').trim();
+      if (!u) { m.textContent = '주소를 넣어 주세요.'; return; }
+      // 학생 링크를 통째로 붙여넣는 경우가 많아, ?rc= 뒤의 주소를 알아서 꺼낸다
+      var rc = u.match(/[?&]rc=([^&#]+)/);
+      if (rc) { try { u = decodeURIComponent(rc[1]); } catch (e) { u = rc[1]; } }
+      if (u.indexOf('script.google.com') < 0) {
+        m.textContent = '구글 Apps Script 주소가 아니에요. .../exec 로 끝나는 주소를 넣어 주세요.';
+        return;
+      }
+      if (!/\/exec\/?$/.test(u)) u = u.replace(/\/(dev|exec)?\/?$/, '') + '/exec';
+      try { localStorage.setItem('rc_exec', u); } catch (e) {}
+      i.value = u;
+      m.innerHTML = '새 탭에서 열었어요 → <b>초록색 화면</b>이면 최신, <b>{"ok":true …}</b> 글자만 보이면 옛 코드예요.';
+      window.open(u, '_blank', 'noopener');
+    });
+
+    i.addEventListener('keydown', function (e) { if (e.key === 'Enter') b.click(); });
+  })();
 </script>
 </body>
 </html>
