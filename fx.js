@@ -290,7 +290,18 @@ function banner(o){
   },60);
   var btn=b.querySelector(".bbtn");
   btn.textContent=o.btn||"계속하기 →";
-  btn.onclick=function(){ b.classList.remove("on"); if(o.onClose) o.onClose() };
+  /* 배너는 화면 전체를 덮는다. 단추 말고 바깥이나 Esc 로도 닫히게 해 둔다 —
+     그러지 않으면 배너가 떠 있는 동안 뒤쪽 단추가 하나도 눌리지 않아 "먹통"처럼 보인다. */
+  function close(){
+    if(!b.classList.contains("on")) return;
+    b.classList.remove("on");
+    document.removeEventListener("keydown", onKey, true);
+    if(o.onClose) o.onClose();
+  }
+  function onKey(e){ if(e.key==="Escape"){ e.preventDefault(); close(); } }
+  btn.onclick=close;
+  b.onclick=function(e){ if(e.target===b) close(); };     /* 카드 바깥(배경)을 눌렀을 때만 */
+  document.addEventListener("keydown", onKey, true);
   b.classList.add("on");
   sound("clear");
 }
