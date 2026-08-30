@@ -206,8 +206,12 @@ var SCORE=0, COMBO=0, BEST=0, hudEl=null;
 function paintHud(){
   if(!hudEl) return;
   var s=hudEl.querySelector(".hs"), c=hudEl.querySelector(".hc"), box=hudEl.querySelector(".hcbox");
+  /* hud() 가 문항마다 HUD 를 다시 그리면서 .hb 를 0 으로 써 놓는다.
+     여기서 같이 칠해 주지 않으면 다음 문제로 넘길 때마다 '최고 콤보'가 0 으로 되돌아간다. */
+  var b=hudEl.querySelector(".hb");
   if(s) s.textContent=SCORE;
   if(c) c.textContent=COMBO>0?("x"+COMBO):"–";
+  if(b) b.textContent=BEST;
   if(box) box.classList.toggle("hot",COMBO>=3);
 }
 function hud(el){
