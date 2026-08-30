@@ -70,7 +70,7 @@
       'border-radius:999px;padding:7px 13px;font:600 12.5px/1 system-ui,sans-serif;cursor:pointer}' +
     '.tr-btn:hover{border-color:#7fc4ff;color:#eaf4ff}' +
     /* 좁은 화면(폰)에서는 아이콘만 — 글자까지 있으면 본문 단추를 덮어 못 누르는 자리가 생긴다 */
-    '@media (max-width:560px){.tr-btn{padding:7px 9px;font-size:0}' +
+    '@media (max-width:900px){.tr-btn{padding:7px 9px;font-size:0}' +
       '.tr-btn::before{content:"🧹";font-size:14px}}' +
     '.tr-ov{position:fixed;inset:0;z-index:2147483100;background:rgba(0,0,0,.72);' +
       'display:flex;align-items:center;justify-content:center;padding:16px}' +
@@ -173,6 +173,7 @@
     b.className = 'tr-btn cm-chrome';
     b.textContent = '🧹 기록 초기화';
     b.setAttribute('aria-label', '기록 초기화');   /* 좁은 화면에서 글자를 숨겨도 읽히도록 */
+    b.title = '기록 초기화';
     b.title = '이 기기에 저장된 학습 기록을 지웁니다';
     b.onclick = open;
     document.body.appendChild(b);

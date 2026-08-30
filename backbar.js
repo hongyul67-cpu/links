@@ -92,7 +92,7 @@
     + '-webkit-backdrop-filter:blur(3px);opacity:.82;transition:opacity .12s,transform .12s;}'
     + '#bb-btn:hover{opacity:1;transform:translateY(-1px);}'
     /* 좁은 화면(폰)에서는 화살표만 — 본문 단추를 덮는 넓이를 줄인다 */
-    + '@media (max-width:560px){#bb-btn{padding:9px 11px;font-size:0;}'
+    + '@media (max-width:900px){#bb-btn{padding:9px 11px;font-size:0;}'
     + '#bb-btn::before{content:"←";font-size:14px;font-weight:700;}}'
     + '#bb-btn:active{transform:translateY(0);}'
     + '@media print{#bb-btn{display:none!important;}}'
