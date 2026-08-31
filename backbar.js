@@ -127,6 +127,24 @@
     b.title = plan.label.replace(/^←\s*/, '');   /* 아이콘만 보이므로 이름은 툴팁으로 */
     b.setAttribute('aria-label', plan.label.replace(/^←\s*/, ''));
     stack(b);
+    clearance();
+  }
+
+  /* 창 높이가 짧으면(노트북 반쪽 창·프로젝터 창) 화면 아래 구석에 고정된 단추들이
+     본문 단추 위에 겹쳐 앉는다. 아이콘만 남겨 좁혀 두었어도 보기 단추처럼 폭이 꽉 찬
+     것들은 좌우 끝이 여전히 가려진다. 문서 끝에 여백을 붙여 두면 그 자리를
+     스크롤로 항상 구석 밖으로 밀어낼 수 있다. */
+  function clearance() {
+    var need = window.innerHeight <= 640;
+    var sp = document.getElementById('bb-clear');
+    if (!need) { if (sp) sp.remove(); return; }
+    if (!sp) {
+      sp = document.createElement('div');
+      sp.id = 'bb-clear';
+      sp.setAttribute('aria-hidden', 'true');
+      sp.style.cssText = 'height:96px;flex:none;pointer-events:none';
+      document.body.appendChild(sp);
+    }
   }
 
   /* 왼쪽 아래에 다른 공용 단추(reset.js 의 「기록 초기화」)가 이미 있으면 그 위로 올라간다 */
@@ -151,6 +169,7 @@
       mo.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'style'] });
     } catch (e) {}
     window.addEventListener('popstate', paint);
+    window.addEventListener('resize', clearance);   /* 창 높이가 바뀌면 여백도 다시 잰다 */
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
