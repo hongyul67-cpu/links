@@ -69,9 +69,10 @@
       'background:rgba(8,22,38,.86);color:#cfe3f7;border:1px solid rgba(207,227,247,.28);' +
       'border-radius:999px;padding:7px 13px;font:600 12.5px/1 system-ui,sans-serif;cursor:pointer}' +
     '.tr-btn:hover{border-color:#7fc4ff;color:#eaf4ff}' +
-    /* 좁은 화면(폰)에서는 아이콘만 — 글자까지 있으면 본문 단추를 덮어 못 누르는 자리가 생긴다 */
-    '@media (max-width:900px){.tr-btn{padding:7px 9px;font-size:0}' +
-      '.tr-btn::before{content:"🧹";font-size:14px}}' +
+    /* 아이콘만 남긴다 — 글자까지 있으면(116px) 본문 단추를 덮어 못 누르는 자리가 생긴다.
+       이름은 title·aria-label 로 남는다. */
+    '.tr-btn{padding:7px 10px;font-size:0}' +
+    '.tr-btn::before{content:"🧹";font-size:14px}' +
     '.tr-ov{position:fixed;inset:0;z-index:2147483100;background:rgba(0,0,0,.72);' +
       'display:flex;align-items:center;justify-content:center;padding:16px}' +
     '.tr-box{background:#101b2c;color:#e9eefa;border:1px solid #2c3852;border-radius:16px;' +

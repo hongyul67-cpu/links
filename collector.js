@@ -611,9 +611,10 @@
         'border:1px solid #cbd5e1;background:#fff;color:#0f172a;cursor:pointer;' +
         'box-shadow:0 4px 14px rgba(0,0,0,.18)}' +
       '#rb-btn:hover{background:#f1f5f9}' +
-      /* 좁은 화면(폰)에서는 아이콘만 — 글자까지 있으면 본문 단추를 덮어 못 누르는 자리가 생긴다 */
-      '@media (max-width:900px){#rb-btn{padding:9px 10px;font-size:0}' +
-        '#rb-btn::before{content:"📋";font-size:15px}}' +
+      /* 아이콘만 남긴다 — 글자까지 있으면(110px) 본문 단추를 덮어 못 누르는 자리가 생긴다.
+         이름은 title·aria-label 로 남아 마우스를 올리면 보이고 읽기 프로그램도 읽는다. */
+      '#rb-btn{padding:9px 11px;font-size:0}' +
+      '#rb-btn::before{content:"📋";font-size:15px}' +
       '.rb-card{background:#fff;color:#0f172a;width:100%;max-width:560px;max-height:80vh;overflow:auto;' +
         'border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,.3);padding:22px;box-sizing:border-box}' +
       '.rb-card h3{margin:0 0 2px;font-size:19px}' +

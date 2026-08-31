@@ -91,9 +91,10 @@
     + 'box-shadow:0 2px 10px rgba(0,0,0,.16);backdrop-filter:blur(3px);'
     + '-webkit-backdrop-filter:blur(3px);opacity:.82;transition:opacity .12s,transform .12s;}'
     + '#bb-btn:hover{opacity:1;transform:translateY(-1px);}'
-    /* 좁은 화면(폰)에서는 화살표만 — 본문 단추를 덮는 넓이를 줄인다 */
-    + '@media (max-width:900px){#bb-btn{padding:9px 11px;font-size:0;}'
-    + '#bb-btn::before{content:"←";font-size:14px;font-weight:700;}}'
+    /* 화살표만 남긴다 — 글자까지 있으면(74px) 본문 단추를 덮는 자리가 생긴다.
+       이름은 aria-label 과 title 로 남는다. */
+    + '#bb-btn{padding:9px 12px;font-size:0;}'
+    + '#bb-btn::before{content:"←";font-size:14px;font-weight:700;}'
     + '#bb-btn:active{transform:translateY(0);}'
     + '@media print{#bb-btn{display:none!important;}}'
     /* 어두운 화면에서도 읽히게 */
@@ -123,6 +124,8 @@
       document.body.appendChild(b);
     }
     b.textContent = plan.label;
+    b.title = plan.label.replace(/^←\s*/, '');   /* 아이콘만 보이므로 이름은 툴팁으로 */
+    b.setAttribute('aria-label', plan.label.replace(/^←\s*/, ''));
     stack(b);
   }
 
