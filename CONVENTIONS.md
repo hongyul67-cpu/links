@@ -21,7 +21,8 @@
 | `Code.gs` | 시트 쪽 백엔드 (Apps Script 웹 앱) |
 | `fx.js` | 정답 파티클·흔들림·클리어 배너 등 연출 |
 | `rank.js` | 아이언~마스터 계급과 랭크 포인트 |
-| `class-mode.js` | 수업용 큰 화면 모드 |
+| `board-pro.js` | **수업 슬라이드 화면** — 펜·형광펜·지우개·타이머·번호뽑기·가리개 |
+| `class-mode.js` | ~~수업용 큰 화면 모드~~ — **2026-09-07 부터 새 도구에 붙이지 않습니다.** 되돌릴 수 있게 파일만 남겨 둡니다 |
 | `reset.js` | 이 기기에 쌓인 학습 기록 지우기 (공용 PC용) |
 | `link-builder.html` | 교사용 제출 링크 생성기 |
 | `guide.html` | 교사용 결과수집 설정 안내 |
@@ -124,19 +125,29 @@ wrong: [3, 7]                                            // ✘ 뭘 틀렸는지
 
 ---
 
-## 3. 연출 · 계급 · 수업모드
+## 3. 연출 · 계급 · 수업 슬라이드
 
 ```html
 <script src="https://hongyul67-cpu.github.io/links/fx.js"></script>
-<script src="https://hongyul67-cpu.github.io/links/class-mode.js"></script>
 <script src="https://hongyul67-cpu.github.io/links/rank.js" data-tool="제도 마스터"></script>
+<script src="lesson.js"></script>                                          <!-- 원고(저장소 것) -->
+<script src="https://hongyul67-cpu.github.io/links/board-pro.js"></script>   <!-- 수업 슬라이드 화면 -->
 ```
 
 - **fx.js** — `FX.burst / punch / shake / flash / banner / starsFor`
   도구가 자체 채점 화면을 가지고 있으면 `FX.ok` / `FX.no` 대신 개별 효과를 쓰세요.
 - **rank.js** — `Rank.card()` `Rank.badge()` `Rank.award(점수0~100, {mode})` `Rank.resultBox()`
   `data-tool`이 **같으면 점수가 합산**됩니다. 같은 계열 도구는 같은 이름을 쓰세요.
-- **class-mode.js** — 한 줄만 붙이면 됩니다. `.wrap / .tab / .choice / .explain` 구조를 자동 인식합니다.
+- **board-pro.js** — 교실 앞에 띄우는 슬라이드입니다. 진입 버튼은 **「📽️ 수업 슬라이드 열기」** 로 씁니다.
+  원고(`lesson.js`)만 저장소가 갖고 화면은 이 공용 파일이 맡습니다.
+  **저장소로 복사하지 마세요** — 예전에 사본을 두었다가 `board.js` 가 7가지로 갈라졌습니다.
+  ```js
+  BoardPro.open({ title:'📽️ <과목명> · 수업 슬라이드', sub:'…', menu:MENU,
+                  fig: s => (s.fig && FIG[s.fig]) ? FIG[s.fig]() : '' });
+  ```
+  만드는 규격은 `WORKPLAN-수업슬라이드.md`(작업방 루트)에 있습니다.
+- **class-mode.js** — **더 쓰지 않습니다.** 새 도구에 붙이지 마세요.
+  수업용 화면은 위의 `board-pro.js` 가 대신합니다.
 
 ---
 
