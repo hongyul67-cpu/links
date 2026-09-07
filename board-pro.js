@@ -45,6 +45,15 @@
      그 값은 #bp 안에서만 쓰이기 때문이다. 그래서 펜을 켜면 형광펜·지우개를 눌러도
      클릭을 캔버스가 먹어 아무것도 안 바뀌었다. 같은 상자 안에 두면 99060 > 99040 이 된다.
 
+   ▸ [다음]은 그 슬라이드가 실제로 가진 단계만 연다
+     요점 → (발문) → (퀴즈) → (정답·해설). 발문이나 퀴즈가 없는 원고에서는
+     그 단계를 건너뛴다. 예전에는 무조건 3단계여서 눌러도 아무것도 안 열리는
+     헛클릭이 생겼다(퀴즈 없이 설명만 넣는 도구에서 특히).
+
+   ▸ 그림 높이는 뷰어가 막는다 (.bp-fig svg{max-height:38vh})
+     도구 쪽에 따로 max-height 를 넣지 않아도 된다. 더 좁혀야 하면
+     도구에서 `#bp .bp-fig svg{...}` 로 덮어쓰면 그쪽이 이긴다.
+
    ▸ 버튼 겹침
      도구바는 **한 줄**이다. 폭이 모자라면 #bp-tools 의 뒤쪽 버튼부터 「⋯」 안으로 들어간다.
      왼쪽 #bp-nav([✕ 나가기][◀][다음][▶])는 접히지 않는다 — 폭 390 에서도 나갈 길이 남는다.
@@ -74,8 +83,16 @@
     '#bp-in{min-height:100%;display:flex;flex-direction:column;gap:min(1.6vh,15px)}',
     '.bp-fig{background:#0f1a27;border:1px solid #2f3b4f;border-radius:15px;padding:10px 13px;',
     '  display:flex;align-items:center;justify-content:center;min-height:0;flex:1 1 auto;overflow:auto}',
-    '.bp-fig svg{max-height:100%;width:100%}',
-    '.bp-fig img{max-width:100%;max-height:44vh;object-fit:contain}',
+    /* 그림 높이 — vh 로 못 박는다.
+       max-height:100% 는 듣지 않는다: 부모(.bp-fig)가 flex 로 늘었다 줄었다 해서
+       백분율의 기준이 잡히지 않기 때문이다. 그래서 세로로 긴 SVG 가 700px 까지
+       자라 슬라이드를 넘겼고, 도구마다 26~38vh 짜리 땜빵 CSS 를 따로 넣고 있었다.
+       (도구 쪽에 더 좁은 값이 있으면 #bp 가 붙어 더 셈이 강하므로 그대로 이긴다.) */
+    '.bp-fig svg{max-height:38vh;width:100%;height:auto}',
+    '.bp-fig img{max-width:100%;max-height:38vh;object-fit:contain}',
+    /* 그림을 <div> 로 한 겹 감싸 넘기는 도구가 많다. 그 div 는 flex 항목이라
+       가만두면 쭈그러들고, 안의 SVG 가 기본폭 300px 로 나온다(교실 화면에서 손톱만 하다). */
+    '.bp-fig > div{width:100%;min-width:0}',
     '.bp-cap{text-align:center;color:#93a2ba;font-size:clamp(12px,1.1vw,19px);flex-shrink:0}',
     '.bp-pts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:min(1vh,10px);flex-shrink:0}',
     '.bp-pts li{font-size:clamp(14px,1.4vw,27px);line-height:1.5;background:#161d29;border:1px solid #2f3b4f;',
@@ -102,12 +119,27 @@
     /* 발문·퀴즈까지 열리면 아래가 길어진다 → 그림과 요점을 줄여 한 화면에 담는다
        (수업 중 스크롤은 흐름을 끊으므로 넘치지 않는 것이 중요하다) */
     '#bp-in.compact .bp-fig{flex:0 1 auto;max-height:20vh}',
+    '#bp-in.compact .bp-fig svg{max-height:18vh}',
+    '#bp-in.compact .bp-fig img{max-height:18vh}',
     '#bp-in.compact .bp-cap{display:none}',
     '#bp-in.compact .bp-pts li{font-size:clamp(12px,.98vw,18px);padding:min(.65vh,7px) 13px;line-height:1.42}',
     '#bp-in.compact .bp-ask{font-size:clamp(13px,1.25vw,24px);padding:min(1vh,11px) 15px}',
     '#bp-in.compact .bp-q{font-size:clamp(14px,1.4vw,27px)}',
     '#bp-in.compact .bp-opt{min-height:48px;padding:min(1.1vh,12px) 14px;font-size:clamp(12.5px,1.15vw,23px)}',
     '#bp-in.compact .bp-exp{font-size:clamp(12px,1.05vw,21px);padding:min(1vh,11px) 15px;max-height:20vh}',
+    /* compact 로도 모자랄 때 한 번 더 조인다 (render 가 재 보고 붙인다) */
+    '#bp-in.tight{gap:min(1vh,9px)}',
+    '#bp-in.tight .bp-fig{flex:0 1 auto;max-height:15vh}',
+    '#bp-in.tight .bp-fig svg{max-height:14vh}',
+    '#bp-in.tight .bp-fig img{max-height:14vh}',
+    '#bp-in.tight .bp-cap{display:none}',
+    '#bp-in.tight .bp-pts{gap:5px}',
+    '#bp-in.tight .bp-pts li{font-size:clamp(11px,.86vw,16px);padding:4px 11px;line-height:1.33}',
+    '#bp-in.tight .bp-ask{font-size:clamp(12px,1.02vw,20px);padding:5px 13px}',
+    '#bp-in.tight .bp-q{font-size:clamp(12.5px,1.12vw,22px)}',
+    '#bp-in.tight .bp-opts{gap:6px}',
+    '#bp-in.tight .bp-opt{min-height:38px;padding:5px 12px;font-size:clamp(11.5px,.96vw,19px)}',
+    '#bp-in.tight .bp-exp{font-size:clamp(11px,.9vw,18px);padding:5px 13px;max-height:16vh}',
 
     /* {{답}} 빈칸 — 누르기 전에는 글자가 안 보인다 */
     '.bp-bl{display:inline-block;min-width:3.4em;padding:0 .35em;margin:0 .12em;border-radius:6px;',
@@ -209,9 +241,28 @@
     '@media (max-width:640px){',
     '  #bp-bar{gap:5px;padding:7px 9px calc(7px + env(safe-area-inset-bottom))}',
     '  #bp-bar button{min-height:44px;min-width:44px;padding:0 9px;font-size:13px}',
-    '  #bp-bar button.big{min-width:74px;max-width:40vw}',
+    /* 좁은 폭에서는 #bp-nav 도 줄어들 수 있어야 한다.
+       줄어드는 몫은 [다음] 단추 하나가 받는다(overflow:hidden + 말줄임이 걸려 있다).
+       나머지 단추는 flex-shrink:0 이라 제 크기를 지키므로 칸 밖으로 삐져나오지 않는다.
+       이걸 안 하면 [다음] 글자가 「💭 발문」처럼 길어질 때 폭이 모자라
+       [▶] 가 오른쪽 [⋯] 를 11px 파고들었다. */
+    '  #bp-nav{width:auto;flex:1 1 auto;min-width:0}',
+    '  #bp-bar button.big{flex:1 1 auto;min-width:56px;max-width:none}',
     '  .bp-opts{grid-template-columns:1fr}',
     '  #bp-head{padding:7px 12px}',
+    /* 폰 폭에서는 보기 4개가 한 줄씩 쌓여 세로가 길어진다.
+       다 연 상태(compact)에서 한 화면에 담기도록 더 조인다. */
+    '  #bp-in{gap:7px}',
+    '  #bp-in.compact .bp-fig{max-height:11vh;padding:6px 8px}',
+    '  #bp-in.compact .bp-fig svg{max-height:10vh}',
+    '  #bp-in.compact .bp-fig img{max-height:10vh}',
+    '  #bp-in.compact .bp-pts{gap:5px}',
+    '  #bp-in.compact .bp-pts li{font-size:11.5px;padding:4px 9px;line-height:1.34}',
+    '  #bp-in.compact .bp-ask{font-size:12px;padding:5px 10px}',
+    '  #bp-in.compact .bp-q{font-size:13px}',
+    '  #bp-in.compact .bp-opts{gap:5px}',
+    '  #bp-in.compact .bp-opt{min-height:34px;padding:4px 9px;font-size:12px}',
+    '  #bp-in.compact .bp-exp{font-size:11.5px;padding:5px 10px;max-height:13vh}',
     '}'
   ].join('\n');
 
@@ -604,7 +655,33 @@
   }
 
   function total() { return mode === 'blank' ? 1 : deck.length; }
-  function maxStep() { return mode === 'lesson' ? 3 : (mode === 'quiz' ? 1 : 0); }
+
+  /* 이 슬라이드가 실제로 가진 단계만 돌려준다.
+     1 = 발문(ask) · 2 = 퀴즈(ansq) · 3 = 정답·해설(ansq 의 정답 표시 또는 anse)
+     예전에는 lesson 이면 무조건 3단계로 세었다. 그래서 발문도 퀴즈도 없이
+     요점과 해설만 있는 원고에서는 [다음]을 두 번 눌러야 겨우 해설이 열렸다
+     (단추 글자는 「✅ 정답」인 채 아무 일도 안 일어났다).
+     퀴즈 없이 설명만 넣는 도구가 실제로 있다 — 그런 원고는 118장이 전부 이랬다. */
+  function stages(s) {
+    var out = [];
+    if (!s) return out;
+    if (s.ask) out.push(1);
+    if (s.ansq) out.push(2);
+    if (s.ansq || s.anse) out.push(3);
+    return out;
+  }
+  /* 지금 단계에서 [다음]이 열게 될 단계. 더 열 것이 없으면 null */
+  function nextStage(s) {
+    var st = stages(s);
+    for (var k = 0; k < st.length; k++) if (st[k] > step) return st[k];
+    return null;
+  }
+  function maxStep() {
+    if (mode === 'quiz') return 1;
+    if (mode !== 'lesson') return 0;
+    var st = stages(deck[i]);
+    return st.length ? st[st.length - 1] : 0;
+  }
 
   function figHtml(s) {
     if (opts.fig) { var h = opts.fig(s); if (h) return '<div class="bp-fig">' + h + '</div>'; }
@@ -639,7 +716,9 @@
         '<div class="bp-exp ' + (step < 1 ? 'bp-veil' : '') + '">' + (s.e || '') + '</div>';
       setBtn(step < 1 ? '✅ 정답 공개' : '✔ 공개됨', step >= 1);
     } else {
-      inn.className = step >= 2 ? 'compact' : '';
+      /* 좁은 폭에서는 보기 4개가 한 줄씩 쌓여 세로가 금방 모자란다.
+         그래서 폰 폭에서는 발문이 열리는 순간(1단계)부터 조인다. */
+      inn.className = (step >= 2 || (step >= 1 && window.innerWidth <= 640)) ? 'compact' : '';
       $('bp-u').textContent = s.u || '';
       $('bp-t').textContent = s.t || '';
       $('bp-i').textContent = (i + 1) + ' / ' + total();
@@ -657,22 +736,39 @@
                    '<span class="n">' + (k + 1) + '</span><span>' + o + '</span></div>';
           }).join('') + '</div></div>' : '') +
         (s.anse ? '<div class="bp-exp ' + (step < 3 ? 'bp-veil' : '') + '">' + s.anse + '</div>' : '');
-      setBtn(stepLabel(s), step >= 3);
+      setBtn(stepLabel(s), nextStage(s) === null);
     }
+    fitBody();
     $('bp-body').scrollTop = 0;
     /* 도구바는 #bp 안이 아니라 형제다(화면 맨 아래 고정). 문서 전체에서 찾는다.
        버튼이 「⋯」 팝업으로 옮겨가 있을 수도 있으므로 더 그렇다. */
     var pv = barBtn('prev'); if (pv) pv.disabled = (i === 0 && step === 0);
-    var nx = barBtn('next'); if (nx) nx.disabled = (i >= total() - 1);
+    var nb = barBtn('next'); if (nb) nb.disabled = (i >= total() - 1);
+    /* [다음] 단추의 글자가 바뀌면 그 단추의 폭도 바뀐다(「✔ 다 열림」 ↔ 「💭 발문」).
+       도구바 자체는 크기가 그대로라 ResizeObserver 가 안 불리므로, 여기서 다시 맞춘다.
+       이걸 안 하면 글자가 길어진 순간 왼쪽 칸이 오른쪽 「⋯」 를 파고든다. */
+    relayout();
+  }
+
+  /* 한 슬라이드 = 한 화면. 그래도 넘치면 글자와 그림을 한 단계씩 더 조인다.
+     원고를 고치지 않고 화면 쪽에서 맞추는 것이라, 요점이 5줄인 옛 원고도 담긴다.
+     (그 전에는 발문까지 연 상태에서 1366 화면이 85~493px 넘쳐 스크롤이 생겼다.) */
+  function fitBody() {
+    if (mode !== 'lesson') return;
+    var bd = $('bp-body'), inn = $('bp-in');
+    if (!bd || !inn) return;
+    var over = function () { return bd.scrollHeight - bd.clientHeight; };
+    if (over() > 2 && inn.className.indexOf('compact') < 0) inn.className = (inn.className + ' compact').replace(/^ /, '');
+    if (over() > 2 && inn.className.indexOf('tight') < 0) inn.className = (inn.className + ' tight').replace(/^ /, '');
   }
 
   /* [다음] 이 실제로 무엇을 여는지 그대로 적는다 — 없는 것을 열겠다고 하면 안 된다 */
   function stepLabel(s) {
-    if (step >= 3) return '✔ 다 열림';
-    if (step < 1 && s.ask) return '💭 발문';
-    if (step < 2 && s.ansq) return '🎯 퀴즈';
-    if (s.anse || s.ansq) return '✅ 정답';
-    return '✔ 다 열림';
+    var nx = nextStage(s);
+    if (nx === null) return '✔ 다 열림';
+    if (nx === 1) return '💭 발문';
+    if (nx === 2) return '🎯 퀴즈';
+    return '✅ 정답';
   }
   /* 도구바 단추 찾기 — 「⋯」 팝업으로 옮겨져 있을 수 있어 두 곳을 다 본다 */
   function barBtn(a) {
@@ -684,7 +780,15 @@
     if (!b) return;
     b.textContent = txt; b.disabled = !!dis;
   }
-  function stepUp() { if (step < maxStep()) { step++; render(); } }
+  /* 빈 단계는 건너뛴다 — 눌렀는데 아무것도 안 열리는 일이 없어야 한다 */
+  function stepUp() {
+    if (mode === 'lesson') {
+      var nx = nextStage(deck[i]);
+      if (nx === null) return;
+      step = nx; render(); return;
+    }
+    if (step < maxStep()) { step++; render(); }
+  }
   function go(d) {
     if (mode === 'blank') return;
     var n = total(); if (!n) return;
