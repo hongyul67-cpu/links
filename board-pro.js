@@ -307,6 +307,13 @@
   var opts = null, root = null, pad = null, ctx = null;
   var strokes = [], curStroke = null, tool = 'none', color = '#ff4d4f';
   var mode = 'lesson', deck = [], i = 0, step = 0;
+  /* 슬라이드마다 판서를 따로 담아 둔다.
+     다음 장으로 넘기면 화면은 깨끗해지고, 그 장으로 돌아오면 쓴 것이 다시 나온다.
+     지워 버리면 앞 장을 다시 설명할 때 판서를 처음부터 해야 해서 이렇게 한다.
+     단계(요점→발문→퀴즈→정답)를 넘기는 것은 같은 장이므로 판서가 그대로 남는다. */
+  var inkBySlide = {};
+  function keepInk(k) { inkBySlide[k] = strokes; }   /* 떠나는 장의 번호로 담는다 */
+  function loadInk() { strokes = inkBySlide[i] || []; redraw(); }
   var built = false;
 
   function $(id) { return document.getElementById(id); }
@@ -574,7 +581,7 @@
     else if (a === 'er') setTool('er');
     else if (a === 'exit') close();
     else if (a === 'undo') { strokes.pop(); redraw(); }
-    else if (a === 'clr') { strokes = []; redraw(); }
+    else if (a === 'clr') { strokes = []; inkBySlide[i] = strokes; redraw(); }
     else if (a === 'prev') go(-1);
     else if (a === 'next') go(1);
     else if (a === 'step') stepUp();
@@ -641,7 +648,7 @@
     $('bp-pop').classList.remove('on');
     $('bp-curtain').classList.remove('on');
     $('bp-cur').classList.remove('on');
-    strokes = []; redraw();
+    inkBySlide = {}; strokes = []; redraw();
     /* 메뉴는 위를 덮을 뿐이라 앞 슬라이드가 그대로 뒤에 남는다.
        남겨 두면 그 안의 빈칸·보기가 메뉴 칸과 자리를 다투므로 비운다. */
     $('bp-in').innerHTML = '';
@@ -657,6 +664,7 @@
     mode = run.kind || 'lesson';
     deck = run.deck || [];
     i = 0; step = 0;
+    inkBySlide = {}; strokes = [];
     $('bp-menu').classList.remove('on');
     $('bp-bar').hidden = false;
     fit(); render(); relayout();
@@ -800,7 +808,11 @@
   function go(d) {
     if (mode === 'blank') return;
     var n = total(); if (!n) return;
-    i = clamp(i + d, 0, n - 1); step = 0; render();
+    var was = i;
+    i = clamp(i + d, 0, n - 1);
+    if (i !== was) { keepInk(was); step = 0; loadInk(); }
+    else step = 0;
+    render();
   }
 
   /* ═════════ 열고 닫기 ═════════ */
