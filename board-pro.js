@@ -166,6 +166,14 @@
     '#bp-bar button{min-height:52px;min-width:52px;border-radius:13px;background:#1f2836;border:1px solid #2f3b4f;',
     '  font-size:clamp(13px,1vw,17px);font-weight:800;padding:0 13px;flex-shrink:0}',
     '#bp-bar button.on{background:linear-gradient(180deg,#3b9bff,#2472c8);border-color:transparent;color:#fff}',
+    /* 단추 밑에 붙는 짧은 이름 — 「🗑 이게 뭐예요?」 소리가 나와서 붙였다(2026-09-08).
+       그림만 있으면 처음 여는 선생님이 무엇인지 알 수가 없다.
+       칸이 좁아지면 어차피 「⋯」 안으로 들어가고, 그 안에서도 이름이 함께 보인다. */
+    '#bp-bar button i,#bp-pop button i{display:block;font-style:normal;font-weight:700;',
+    '  font-size:9.5px;line-height:1.1;margin-top:2px;letter-spacing:-.3px;opacity:.72;',
+    '  white-space:nowrap}',
+    '#bp-bar button.on i,#bp-pop button.on i{opacity:.95}',
+    '#bp-bar #bp-nav button i{display:none}',
     '#bp-bar button.big{flex:0 0 auto;min-width:96px;max-width:min(46vw,230px);',
     '  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;',
     '  background:linear-gradient(180deg,#3b9bff,#2472c8);border:0;color:#fff}',
@@ -276,21 +284,21 @@
         '<button type="button" data-a="next" title="다음 (→)">▶</button>' +
       '</div>' +
       '<div id="bp-tools">' +
-        '<button type="button" id="bp-sel"  data-a="sel"  class="on" title="선택 — 판서 끄기 (Esc)">🖱️</button>' +
-        '<button type="button" id="bp-pen"  data-a="pen"  title="펜 (P)">✏️</button>' +
-        '<button type="button" id="bp-hi"   data-a="hi"   title="형광펜">🖍️</button>' +
-        '<button type="button" id="bp-er"   data-a="er"   title="지우개">🧽</button>' +
+        '<button type="button" id="bp-sel"  data-a="sel"  class="on" title="선택 — 판서 끄기 (Esc)">🖱️<i>선택</i></button>' +
+        '<button type="button" id="bp-pen"  data-a="pen"  title="펜 (P)">✏️<i>펜</i></button>' +
+        '<button type="button" id="bp-hi"   data-a="hi"   title="형광펜">🖍️<i>형광펜</i></button>' +
+        '<button type="button" id="bp-er"   data-a="er"   title="지우개">🧽<i>지우개</i></button>' +
         '<button type="button" class="bp-sw on" data-c="#ff4d4f" style="background:#ff4d4f" title="빨강"></button>' +
         '<button type="button" class="bp-sw"    data-c="#ffd166" style="background:#ffd166" title="노랑"></button>' +
         '<button type="button" class="bp-sw"    data-c="#4ade80" style="background:#4ade80" title="초록"></button>' +
         '<button type="button" class="bp-sw"    data-c="#ffffff" style="background:#ffffff" title="흰색"></button>' +
-        '<button type="button" data-a="undo" title="되돌리기">↩</button>' +
-        '<button type="button" data-a="clr"  title="판서 지우기 (C)">🗑</button>' +
-        '<button type="button" data-a="timer"   title="타이머">⏱</button>' +
-        '<button type="button" data-a="pick"    title="번호 뽑기">🎲</button>' +
-        '<button type="button" id="bp-cur" data-a="curtain" title="가리개">🪟</button>' +
-        '<button type="button" data-a="full"    title="전체화면 (F)">⛶</button>' +
-        '<button type="button" data-a="home"    title="처음으로">🏠</button>' +
+        '<button type="button" data-a="undo" title="되돌리기">↩<i>되돌리기</i></button>' +
+        '<button type="button" data-a="clr"  title="판서 지우기 (C)">🗑<i>판서 지움</i></button>' +
+        '<button type="button" data-a="timer"   title="타이머">⏱<i>타이머</i></button>' +
+        '<button type="button" data-a="pick"    title="번호 뽑기">🎲<i>번호 뽑기</i></button>' +
+        '<button type="button" id="bp-cur" data-a="curtain" title="가리개">🪟<i>가리개</i></button>' +
+        '<button type="button" data-a="full"    title="전체화면 (F)">⛶<i>전체화면</i></button>' +
+        '<button type="button" data-a="home"    title="처음으로">🏠<i>처음으로</i></button>' +
       '</div>' +
       '<button type="button" id="bp-more" data-a="more" title="더보기" hidden>⋯</button>' +
     '</div>';
