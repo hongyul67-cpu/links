@@ -118,9 +118,9 @@
     '.bp-veil{display:none!important}',
     /* 발문·퀴즈까지 열리면 아래가 길어진다 → 그림과 요점을 줄여 한 화면에 담는다
        (수업 중 스크롤은 흐름을 끊으므로 넘치지 않는 것이 중요하다) */
-    '#bp-in.compact .bp-fig{flex:0 1 auto;max-height:20vh}',
-    '#bp-in.compact .bp-fig svg{max-height:18vh}',
-    '#bp-in.compact .bp-fig img{max-height:18vh}',
+    '#bp-in.compact .bp-fig{flex:0 1 auto;max-height:34vh}',
+    '#bp-in.compact .bp-fig svg{max-height:32vh}',
+    '#bp-in.compact .bp-fig img{max-height:32vh}',
     '#bp-in.compact .bp-cap{display:none}',
     '#bp-in.compact .bp-pts li{font-size:clamp(12px,.98vw,18px);padding:min(.65vh,7px) 13px;line-height:1.42}',
     '#bp-in.compact .bp-ask{font-size:clamp(13px,1.25vw,24px);padding:min(1vh,11px) 15px}',
@@ -129,9 +129,9 @@
     '#bp-in.compact .bp-exp{font-size:clamp(12px,1.05vw,21px);padding:min(1vh,11px) 15px;max-height:20vh}',
     /* compact 로도 모자랄 때 한 번 더 조인다 (render 가 재 보고 붙인다) */
     '#bp-in.tight{gap:min(1vh,9px)}',
-    '#bp-in.tight .bp-fig{flex:0 1 auto;max-height:15vh}',
-    '#bp-in.tight .bp-fig svg{max-height:14vh}',
-    '#bp-in.tight .bp-fig img{max-height:14vh}',
+    '#bp-in.tight .bp-fig{flex:0 1 auto;max-height:26vh}',
+    '#bp-in.tight .bp-fig svg{max-height:24vh}',
+    '#bp-in.tight .bp-fig img{max-height:24vh}',
     '#bp-in.tight .bp-cap{display:none}',
     '#bp-in.tight .bp-pts{gap:5px}',
     '#bp-in.tight .bp-pts li{font-size:clamp(11px,.86vw,16px);padding:4px 11px;line-height:1.33}',
@@ -140,6 +140,19 @@
     '#bp-in.tight .bp-opts{gap:6px}',
     '#bp-in.tight .bp-opt{min-height:38px;padding:5px 12px;font-size:clamp(11.5px,.96vw,19px)}',
     '#bp-in.tight .bp-exp{font-size:clamp(11px,.9vw,18px);padding:5px 13px;max-height:16vh}',
+    /* tight 로도 모자랄 때만 쓰는 마지막 단계. 여기서야 그림을 크게 줄인다 —
+       그 전까지는 글자가 먼저 양보한다(그림이 설명의 대상이라 제일 늦게 줄여야 한다). */
+    '#bp-in.tighter{gap:min(.7vh,7px)}',
+    '#bp-in.tighter .bp-fig{flex:0 1 auto;max-height:17vh;padding:6px 9px}',
+    '#bp-in.tighter .bp-fig svg{max-height:16vh}',
+    '#bp-in.tighter .bp-fig img{max-height:16vh}',
+    '#bp-in.tighter .bp-pts{gap:4px}',
+    '#bp-in.tighter .bp-pts li{font-size:clamp(10.5px,.8vw,15px);padding:3px 10px;line-height:1.3}',
+    '#bp-in.tighter .bp-ask{font-size:clamp(11px,.94vw,18px);padding:4px 11px}',
+    '#bp-in.tighter .bp-q{font-size:clamp(11.5px,1.02vw,20px)}',
+    '#bp-in.tighter .bp-opts{gap:5px}',
+    '#bp-in.tighter .bp-opt{min-height:32px;padding:4px 10px;font-size:clamp(10.5px,.88vw,17px)}',
+    '#bp-in.tighter .bp-exp{font-size:clamp(10.5px,.84vw,16px);padding:4px 11px;max-height:14vh}',
 
     /* {{답}} 빈칸 — 누르기 전에는 글자가 안 보인다 */
     '.bp-bl{display:inline-block;min-width:3.4em;padding:0 .35em;margin:0 .12em;border-radius:6px;',
@@ -261,9 +274,9 @@
     /* 폰 폭에서는 보기 4개가 한 줄씩 쌓여 세로가 길어진다.
        다 연 상태(compact)에서 한 화면에 담기도록 더 조인다. */
     '  #bp-in{gap:7px}',
-    '  #bp-in.compact .bp-fig{max-height:11vh;padding:6px 8px}',
-    '  #bp-in.compact .bp-fig svg{max-height:10vh}',
-    '  #bp-in.compact .bp-fig img{max-height:10vh}',
+    '  #bp-in.compact .bp-fig{max-height:22vh;padding:6px 8px}',
+    '  #bp-in.compact .bp-fig svg{max-height:20vh}',
+    '  #bp-in.compact .bp-fig img{max-height:20vh}',
     '  #bp-in.compact .bp-pts{gap:5px}',
     '  #bp-in.compact .bp-pts li{font-size:11.5px;padding:4px 9px;line-height:1.34}',
     '  #bp-in.compact .bp-ask{font-size:12px;padding:5px 10px}',
@@ -732,9 +745,12 @@
         '<div class="bp-exp ' + (step < 1 ? 'bp-veil' : '') + '">' + (s.e || '') + '</div>';
       setBtn(step < 1 ? '✅ 정답 공개' : '✔ 공개됨', step >= 1);
     } else {
-      /* 좁은 폭에서는 보기 4개가 한 줄씩 쌓여 세로가 금방 모자란다.
-         그래서 폰 폭에서는 발문이 열리는 순간(1단계)부터 조인다. */
-      inn.className = (step >= 2 || (step >= 1 && window.innerWidth <= 640)) ? 'compact' : '';
+      /* 단계를 열었다고 무조건 조이지 않는다.
+         예전에는 퀴즈가 열리는 순간 compact 가 붙어 큰 화면에서도 그림이 20vh 로 쭈그러들었다.
+         (수업에서 "그림이 너무 작아 안 보인다"는 말이 여기서 나왔다)
+         이제는 fitBody() 가 실제로 넘치는지 재 보고 필요한 만큼만 조인다 —
+         글자부터 줄이고, 그림은 마지막에 줄인다. */
+      inn.className = '';
       $('bp-u').textContent = s.u || '';
       $('bp-t').textContent = s.t || '';
       $('bp-i').textContent = (i + 1) + ' / ' + total();
@@ -774,8 +790,22 @@
     var bd = $('bp-body'), inn = $('bp-in');
     if (!bd || !inn) return;
     var over = function () { return bd.scrollHeight - bd.clientHeight; };
-    if (over() > 2 && inn.className.indexOf('compact') < 0) inn.className = (inn.className + ' compact').replace(/^ /, '');
-    if (over() > 2 && inn.className.indexOf('tight') < 0) inn.className = (inn.className + ' tight').replace(/^ /, '');
+    var add = function (c) {
+      if (over() > 2 && inn.className.indexOf(c) < 0)
+        inn.className = (inn.className + ' ' + c).replace(/^ /, '');
+    };
+    add('compact');   /* 글자를 줄인다 */
+    add('tight');     /* 더 줄인다 */
+    add('tighter');   /* 여기서야 그림을 줄인다 */
+    /* 그림이 <img> 면 아직 안 실려 높이가 0 으로 재질 수 있다 — 실린 뒤 한 번 더 잰다 */
+    var im = inn.querySelectorAll('img');
+    for (var k = 0; k < im.length; k++) {
+      if (im[k].complete) continue;
+      im[k].addEventListener('load', function () {
+        inn.className = inn.className.replace(/(compact|tight|tighter)/g, '').trim();
+        fitBody();
+      }, { once: true });
+    }
   }
 
   /* [다음] 이 실제로 무엇을 여는지 그대로 적는다 — 없는 것을 열겠다고 하면 안 된다 */
