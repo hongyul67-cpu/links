@@ -11,6 +11,11 @@
   이 파일에는 전체 도구 목록이 없습니다 → 공유해도 다른 도구가 노출되지 않아요.
   링크는 "링크모음 마스터"에서 만듭니다.
 
+  🔒 2026-09-11 부터 마스터가 만드는 새 링크는 ?e= (암호화) 입니다.
+     받은 사람이 이번 주 코드나 교사용 암호를 넣어야 목록이 풀립니다.
+     풀 때 쓰는 감싼 키는 링크 허브의 tools.enc 에서 가져옵니다(암호 없이는 못 품).
+     예전 ?d= 링크는 이미 나눠 준 QR 을 깨지 않도록 지금처럼 바로 열립니다.
+
   ⛔ 이미 나눠준 링크들이 "이 파일"을 계속 불러옵니다.
      · 이 파일을 고치면 예전에 준 링크에도 바로 반영됩니다 (보통은 좋은 일 — 개선이 자동 전파).
      · 그러나 아래는 절대 금지 → 예전 링크가 전부 깨집니다:
@@ -71,6 +76,7 @@
 <body>
 <div class="wrap">
   <header><h1 id="ttl">학습 도구 모음</h1><div class="sub" id="sub"></div></header>
+  <div id="gatehost"></div>
   <div id="rcwrap"></div>
   <div id="app"></div>
   <footer id="ft"></footer>
@@ -82,33 +88,105 @@ var GH_USER="hongyul67-cpu";
 var TYPE_ORDER={"게임":0,"개념":1,"문제풀이":2};
 var TYPE_CLASS={"게임":"t-game","개념":"t-concept","문제풀이":"t-quiz"};
 var LSK="rc_endpoint_v1";
+/* 잠긴 링크를 풀 때 쓰는 감싼 키 묶음 — 링크 허브와 같은 파일, 같은 암호·주간 코드 */
+var KIT_URL="https://hongyul67-cpu.github.io/links-master/tools.enc";
 
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 function qp(n){try{return new URLSearchParams(location.search).get(n);}catch(e){return null;}}
 function rank(t){return (t.type&&t.type in TYPE_ORDER)?TYPE_ORDER[t.type]:99;}
+function fail(html){ document.getElementById("app").innerHTML='<div class="bad">'+html+'</div>'; }
 
-/* 주소(?d=)에서 모음 데이터 복원 */
-var DATA=null;
-try{
-  var raw=qp("d");
-  if(raw && window.LZString){
-    var json=LZString.decompressFromEncodedURIComponent(raw);
-    if(json) DATA=JSON.parse(json);
-  }
-}catch(e){ DATA=null; }
+/* ── 잠금 ─────────────────────────────────────────────
+   links-master/master.html 에 같은 코드가 있다(내보내기 파일에도 그대로 들어감).
+   고치면 둘 다 고칠 것. */
+function gB64(s){s=String(s).replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";var b=atob(s),u=new Uint8Array(b.length);for(var i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return u;}
+function gateTry(pw,kit){
+  return crypto.subtle.importKey("raw",new TextEncoder().encode(pw),"PBKDF2",false,["deriveKey"]).then(function(base){
+    return crypto.subtle.deriveKey({name:"PBKDF2",salt:gB64(kit.kdf.salt),iterations:kit.kdf.iter,hash:"SHA-256"},base,{name:"AES-GCM",length:256},false,["decrypt"]);
+  }).then(function(kek){
+    var i=0;
+    function next(){
+      if(i>=kit.keys.length)return Promise.reject(new Error("BADPW"));
+      var k=kit.keys[i++];
+      return crypto.subtle.decrypt({name:"AES-GCM",iv:gB64(k.iv)},kek,gB64(k.blob)).then(function(p){return JSON.parse(new TextDecoder().decode(p));},next);
+    }
+    return next();
+  }).then(function(nfo){
+    var d=new Date(),t=d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2),e;
+    if(nfo.nbf&&t<nfo.nbf){e=new Error("NOTYET");e.when=nfo.nbf;throw e;}
+    if(nfo.exp&&t>=nfo.exp){e=new Error("EXPIRED");e.when=nfo.exp;throw e;}
+    if(!nfo.sk)throw new Error("BADPW");
+    return nfo.sk;
+  });
+}
+function gateUnseal(sk,sealed){
+  var u=gB64(sealed);
+  return crypto.subtle.importKey("raw",gB64(sk),{name:"AES-GCM"},false,["decrypt"]).then(function(k){
+    return crypto.subtle.decrypt({name:"AES-GCM",iv:u.slice(0,12)},k,u.slice(12));
+  }).then(function(b){return new Uint8Array(b);},function(){throw new Error("BADLINK");});
+}
+function gateMount(kit,sealed,host,onOpen){
+  var LS="share_pw_v1",opened=false;
+  var box=document.createElement("div");
+  box.innerHTML='<div style="max-width:420px;margin:30px auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 22px;text-align:center">'+
+    '<div style="font-size:40px;line-height:1">🔒</div>'+
+    '<h2 style="margin:10px 0 6px;font-size:19px">코드를 넣어 주세요</h2>'+
+    '<p style="margin:0 0 16px;color:var(--dim);font-size:13.5px">선생님께 받은 <b>이번 주 코드(8자리)</b>나 암호를 넣으면 열려요.</p>'+
+    '<input type="password" autocomplete="off" placeholder="이번 주 코드 또는 암호" style="width:100%;box-sizing:border-box;padding:12px;font-size:17px;text-align:center;letter-spacing:2px;border:1px solid var(--line);border-radius:10px;background:var(--card2);color:var(--tx);font-family:inherit">'+
+    '<button type="button" style="width:100%;margin-top:10px;padding:12px;font-size:15px;font-weight:800;border:0;border-radius:10px;background:var(--accent);color:#fff;cursor:pointer;font-family:inherit">열기</button>'+
+    '<div data-g="msg" style="margin-top:12px;min-height:18px;font-size:13px;color:var(--dim);line-height:1.5"></div>'+
+    '<p style="margin:14px 0 0;font-size:11.5px;color:var(--dim)">한 번 열면 이 기기에서는 다음부터 바로 들어갑니다.<br>주간 코드는 그 주에만 통합니다.</p></div>';
+  host.appendChild(box);
+  var inp=box.querySelector("input"),btn=box.querySelector("button"),msg=box.querySelector("[data-g=msg]");
+  function say(t,bad){msg.innerHTML=t;msg.style.color=bad?"#ef4444":"";}
+  function done(bytes){if(opened)return;opened=true;box.remove();onOpen(bytes);}
+  function tryPw(pw){return gateTry(pw,kit).then(function(sk){return gateUnseal(sk,sealed);});}
+  btn.onclick=function(){
+    var pw=inp.value.replace(/\s+/g,"");
+    if(!pw){inp.focus();return;}
+    btn.disabled=true;say("여는 중…");
+    tryPw(pw).then(function(b){try{localStorage.setItem(LS,pw);}catch(e){}done(b);},function(e){
+      var m=e&&e.message;btn.disabled=false;
+      say(m==="EXPIRED"?"사용 기간이 끝난 코드입니다 ("+e.when+"까지).<br>선생님께 이번 주 코드를 받으세요."
+        :m==="NOTYET"?"아직 쓸 수 없는 코드입니다.<br>"+e.when+"부터 쓸 수 있어요."
+        :m==="BADLINK"?"링크가 잘렸거나 손상됐어요.<br>전체 주소를 다시 받아 주세요."
+        :"코드나 암호가 맞지 않습니다.",true);
+      inp.value="";inp.focus();
+    });
+  };
+  inp.addEventListener("keydown",function(e){if(e.key==="Enter")btn.click();});
+  /* 이 기기에 기억된 것만 조용히 시도한다 — 보낸 사람 기기에서만 바로 열리는 까닭.
+     share_pw_v1 = 이 잠금에서 넣은 것 · hub_pw_v1·hong_pw_v1 = 허브·도구에서 넣은 것 */
+  var tries=[];
+  try{["share_pw_v1","hub_pw_v1","hong_pw_v1"].forEach(function(k){var v=localStorage.getItem(k);
+    if(v&&tries.every(function(t){return t.v!==v;}))tries.push({k:k,v:v});});}catch(e){}
+  (function next(i){
+    if(opened)return;
+    if(i>=tries.length){say("");inp.focus();return;}
+    if(i===0)say("여는 중…");
+    tryPw(tries[i].v).then(done,function(){
+      if(tries[i].k===LS){try{localStorage.removeItem(LS);}catch(e){}}   // 지난주 코드 등
+      next(i+1);
+    });
+  })(0);
+}
 
 /* 지원하는 최신 형식 번호. 형식을 바꾸면 올리되, 옛 버전 처리는 지우지 말 것 */
 var FMT_MAX = 2;
-var VER = (DATA && DATA.v) ? DATA.v : 1;   // v 없는 옛 링크 = 1로 취급
 
-if(!DATA || !DATA.l || !DATA.l.length){
-  document.getElementById("app").innerHTML =
-    '<div class="bad">😅 도구 목록을 불러오지 못했어요.<br>선생님께 받은 링크가 잘린 것 같아요 — 전체 주소를 다시 받아 주세요.</div>';
-} else if(VER > FMT_MAX){
-  // 마스터가 뷰어보다 새 형식으로 만든 링크 (배포 순서가 어긋난 경우)
-  document.getElementById("app").innerHTML =
-    '<div class="bad">🔄 이 링크는 최신 형식이라 아직 열 수 없어요.<br>잠시 후 새로고침하거나, 선생님께 알려 주세요.</div>';
-} else {
+/* 모음 데이터를 받아 화면을 그린다 (?d= 는 바로, ?e= 는 잠금이 풀린 뒤) */
+function start(DATA){
+  var VER = (DATA && DATA.v) ? DATA.v : 1;   // v 없는 옛 링크 = 1로 취급
+
+  if(!DATA || !DATA.l || !DATA.l.length){
+    fail('😅 도구 목록을 불러오지 못했어요.<br>선생님께 받은 링크가 잘린 것 같아요 — 전체 주소를 다시 받아 주세요.');
+    return;
+  }
+  if(VER > FMT_MAX){
+    // 마스터가 뷰어보다 새 형식으로 만든 링크 (배포 순서가 어긋난 경우)
+    fail('🔄 이 링크는 최신 형식이라 아직 열 수 없어요.<br>잠시 후 새로고침하거나, 선생님께 알려 주세요.');
+    return;
+  }
   /* ── 형식 v1 읽기 ── (예전 링크가 이 코드에 의존합니다. 지우지 마세요) */
   var TITLE=DATA.t||"학습 도구 모음";
   /* exec: g(배포ID만) 있으면 앞뒤 붙여 복원, 없으면 r(전체주소·옛 링크 호환) */
@@ -202,6 +280,37 @@ if(!DATA || !DATA.l || !DATA.l.length){
     paint();
   }
 }
+
+/* ── 시작 ── */
+(function(){
+  var sealed=qp("e");
+  if(sealed){
+    /* 잠긴 새 링크 — 코드·암호를 넣어야 목록이 풀린다 */
+    if(!window.LZString || !window.crypto || !crypto.subtle){
+      fail('😅 이 브라우저에서는 잠긴 링크를 열 수 없어요.<br>크롬이나 사파리로 다시 열어 주세요.'); return;
+    }
+    fetch(KIT_URL,{cache:"no-cache"}).then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+      .then(function(blob){
+        gateMount({kdf:blob.kdf,keys:blob.keys}, sealed, document.getElementById("gatehost"), function(bytes){
+          var d=null;
+          try{ d=JSON.parse(LZString.decompressFromUint8Array(bytes)); }catch(e){ d=null; }
+          start(d);
+        });
+      })
+      .catch(function(){ fail('😅 잠금을 풀 준비를 하지 못했어요.<br>인터넷 연결을 확인하고 새로고침해 주세요.'); });
+    return;
+  }
+  /* 예전 링크(?d=) — 이미 나눠 준 QR 을 깨지 않도록 그대로 바로 연다 */
+  var DATA=null;
+  try{
+    var raw=qp("d");
+    if(raw && window.LZString){
+      var json=LZString.decompressFromEncodedURIComponent(raw);
+      if(json) DATA=JSON.parse(json);
+    }
+  }catch(e){ DATA=null; }
+  start(DATA);
+})();
 </script>
 </body>
 </html>
