@@ -125,19 +125,39 @@ function gateUnseal(sk,sealed){
     return crypto.subtle.decrypt({name:"AES-GCM",iv:u.slice(0,12)},k,u.slice(12));
   }).then(function(b){return new Uint8Array(b);},function(){throw new Error("BADLINK");});
 }
-function gateMount(kit,sealed,host,onOpen){
+/* opts.compact = true 면 화면을 막지 않고 목록 위에 작은 줄로만 뜬다.
+   자작·공개 도구는 이미 보이는 상태이고, 코드가 필요한 것만 더 여는 경우다.
+   opts.count = 코드로 열리는 도구 수 (화면에 알려 주려고) */
+function gateMount(kit,sealed,host,onOpen,opts){
+  opts=opts||{};
   var LS="share_pw_v1",opened=false;
   var box=document.createElement("div");
-  box.innerHTML='<div style="max-width:420px;margin:30px auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 22px;text-align:center">'+
-    '<div style="font-size:40px;line-height:1">🔒</div>'+
-    '<h2 style="margin:10px 0 6px;font-size:19px">코드를 넣어 주세요</h2>'+
-    '<p style="margin:0 0 16px;color:var(--dim);font-size:13.5px">선생님께 받은 <b>이번 주 코드(8자리)</b>나 암호를 넣으면 열려요.</p>'+
-    '<input type="password" autocomplete="off" placeholder="이번 주 코드 또는 암호" style="width:100%;box-sizing:border-box;padding:12px;font-size:17px;text-align:center;letter-spacing:2px;border:1px solid var(--line);border-radius:10px;background:var(--card2);color:var(--tx);font-family:inherit">'+
-    '<button type="button" style="width:100%;margin-top:10px;padding:12px;font-size:15px;font-weight:800;border:0;border-radius:10px;background:var(--accent);color:#fff;cursor:pointer;font-family:inherit">열기</button>'+
-    '<div data-g="msg" style="margin-top:12px;min-height:18px;font-size:13px;color:var(--dim);line-height:1.5"></div>'+
-    '<p style="margin:14px 0 0;font-size:11.5px;color:var(--dim)">한 번 열면 이 기기에서는 다음부터 바로 들어갑니다.<br>주간 코드는 그 주에만 통합니다.</p></div>';
+  if(opts.compact){
+    box.innerHTML='<div style="background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:16px 0 4px">'+
+      '<div style="display:flex;align-items:center;gap:9px;flex-wrap:wrap;font-size:13.5px">'+
+        '<span style="flex:1;min-width:190px">🔒 <b>코드가 있어야 열리는 자료'+(opts.count?' '+opts.count+'개':'')+'</b>가 더 있어요'+
+        '<br><span style="color:var(--dim);font-size:12.5px">교과서·기출처럼 그대로 못 내보내는 자료입니다. 나머지는 아래에 이미 열려 있어요.</span></span>'+
+        '<button type="button" data-g="show" style="background:var(--accent);color:#fff;border:0;border-radius:8px;padding:7px 12px;font-size:12.5px;font-weight:700;cursor:pointer;font-family:inherit">코드 넣기</button>'+
+      '</div>'+
+      '<div data-g="form" style="display:none;margin-top:10px">'+
+        '<input type="password" autocomplete="off" placeholder="이번 주 코드 또는 암호" style="width:100%;box-sizing:border-box;padding:10px;font-size:15px;text-align:center;letter-spacing:2px;border:1px solid var(--line);border-radius:8px;background:var(--card2);color:var(--tx);font-family:inherit">'+
+        '<button type="button" data-g="go" style="width:100%;margin-top:8px;padding:10px;font-size:14px;font-weight:800;border:0;border-radius:8px;background:var(--accent);color:#fff;cursor:pointer;font-family:inherit">열기</button>'+
+        '<div data-g="msg" style="margin-top:8px;min-height:16px;font-size:12.5px;color:var(--dim);line-height:1.5"></div>'+
+      '</div></div>';
+  } else {
+    box.innerHTML='<div style="max-width:420px;margin:30px auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 22px;text-align:center">'+
+      '<div style="font-size:40px;line-height:1">🔒</div>'+
+      '<h2 style="margin:10px 0 6px;font-size:19px">코드를 넣어 주세요</h2>'+
+      '<p style="margin:0 0 16px;color:var(--dim);font-size:13.5px">선생님께 받은 <b>이번 주 코드(8자리)</b>나 암호를 넣으면 열려요.</p>'+
+      '<input type="password" autocomplete="off" placeholder="이번 주 코드 또는 암호" style="width:100%;box-sizing:border-box;padding:12px;font-size:17px;text-align:center;letter-spacing:2px;border:1px solid var(--line);border-radius:10px;background:var(--card2);color:var(--tx);font-family:inherit">'+
+      '<button type="button" data-g="go" style="width:100%;margin-top:10px;padding:12px;font-size:15px;font-weight:800;border:0;border-radius:10px;background:var(--accent);color:#fff;cursor:pointer;font-family:inherit">열기</button>'+
+      '<div data-g="msg" style="margin-top:12px;min-height:18px;font-size:13px;color:var(--dim);line-height:1.5"></div>'+
+      '<p style="margin:14px 0 0;font-size:11.5px;color:var(--dim)">한 번 열면 이 기기에서는 다음부터 바로 들어갑니다.<br>주간 코드는 그 주에만 통합니다.</p></div>';
+  }
   host.appendChild(box);
-  var inp=box.querySelector("input"),btn=box.querySelector("button"),msg=box.querySelector("[data-g=msg]");
+  var inp=box.querySelector("input"),btn=box.querySelector("[data-g=go]"),msg=box.querySelector("[data-g=msg]");
+  var showBtn=box.querySelector("[data-g=show]"),formEl=box.querySelector("[data-g=form]");
+  if(showBtn)showBtn.onclick=function(){formEl.style.display="block";showBtn.style.display="none";inp.focus();};
   function say(t,bad){msg.innerHTML=t;msg.style.color=bad?"#ef4444":"";}
   function done(bytes){if(opened)return;opened=true;box.remove();onOpen(bytes);}
   function tryPw(pw){return gateTry(pw,kit).then(function(sk){return gateUnseal(sk,sealed);});}
@@ -162,7 +182,7 @@ function gateMount(kit,sealed,host,onOpen){
     if(v&&tries.every(function(t){return t.v!==v;}))tries.push({k:k,v:v});});}catch(e){}
   (function next(i){
     if(opened)return;
-    if(i>=tries.length){say("");inp.focus();return;}
+    if(i>=tries.length){say("");if(!opts.compact)inp.focus();return;}
     if(i===0)say("여는 중…");
     tryPw(tries[i].v).then(done,function(){
       if(tries[i].k===LS){try{localStorage.removeItem(LS);}catch(e){}}   // 지난주 코드 등
@@ -174,8 +194,10 @@ function gateMount(kit,sealed,host,onOpen){
 /* 지원하는 최신 형식 번호. 형식을 바꾸면 올리되, 옛 버전 처리는 지우지 말 것 */
 var FMT_MAX = 2;
 
-/* 모음 데이터를 받아 화면을 그린다 (?d= 는 바로, ?e= 는 잠금이 풀린 뒤) */
-function start(DATA){
+/* 모음 데이터를 받아 화면을 그린다.
+   ?d= (자작·공개 도구)는 바로 · ?e= (교과서·기출이 든 도구)는 코드를 넣은 뒤 목록에 더해진다.
+   두 번째 인자 SEALED 가 있으면 목록 위에 「코드 넣기」 줄만 뜨고 화면은 막지 않는다. */
+function start(DATA, SEALED, LOCKN){
   var VER = (DATA && DATA.v) ? DATA.v : 1;   // v 없는 옛 링크 = 1로 취급
 
   if(!DATA || !DATA.l || !DATA.l.length){
@@ -197,11 +219,12 @@ function start(DATA){
   var FIX=!!DATA.f;
   /* 압축용 배열 → 원래 형태로.
      v1: [emoji,name,desc,repo,url,cat,type]  ·  v2(간결): [emoji,name,repo,url,cat,type] (desc 없음) */
-  var TOOLS=DATA.l.map(function(a){
+  function mapRow(a){
     return (VER>=2)
       ? { emoji:a[0]||"🔗", name:a[1]||"", desc:"",      repo:a[2]||"", url:a[3]||"", cat:a[4]||"기타", type:a[5]||"" }
       : { emoji:a[0]||"🔗", name:a[1]||"", desc:a[2]||"", repo:a[3]||"", url:a[4]||"", cat:a[5]||"기타", type:a[6]||"" };
-  });
+  }
+  var TOOLS=DATA.l.map(mapRow);
   var CATEGORIES=DATA.c||[];   // v2 엔 c 없음 → 도구 등장 순서로 분류
 
   document.title=TITLE;
@@ -249,6 +272,28 @@ function start(DATA){
   }
   render();
 
+  /* 코드가 필요한 도구가 따로 담겨 온 링크 — 목록 위에 작은 줄로만 띄운다.
+     코드가 맞으면 그 도구들이 목록에 더해지고, 안 넣어도 위 목록은 그대로 쓴다. */
+  if(SEALED){
+    if(!window.LZString || !window.crypto || !crypto.subtle){
+      document.getElementById("gatehost").innerHTML =
+        '<div class="bad">🔒 코드로 열리는 자료가 더 있는데, 이 브라우저에서는 열 수 없어요. 크롬이나 사파리로 열어 주세요.</div>';
+    } else {
+      fetch(KIT_URL,{cache:"no-cache"}).then(function(r){ if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); })
+        .then(function(blob){
+          gateMount({kdf:blob.kdf,keys:blob.keys}, SEALED, document.getElementById("gatehost"), function(bytes){
+            var ex=null;
+            try{ ex=JSON.parse(LZString.decompressFromUint8Array(bytes)); }catch(e){ ex=null; }
+            if(ex && ex.l && ex.l.length){ ex.l.forEach(function(a){ TOOLS.push(mapRow(a)); }); render(); }
+          }, { compact:true, count:LOCKN||0 });
+        })
+        .catch(function(){
+          document.getElementById("gatehost").innerHTML =
+            '<div class="bad">🔒 코드로 열리는 자료를 준비하지 못했어요(인터넷 확인). 아래 목록은 그대로 쓸 수 있어요.</div>';
+        });
+    }
+  }
+
   if(ALLOW_RC){
     document.getElementById("rcwrap").innerHTML =
       '<div class="rcbar"><div class="rcnow"><span class="st" id="rcst"></span>'+
@@ -284,8 +329,23 @@ function start(DATA){
 /* ── 시작 ── */
 (function(){
   var sealed=qp("e");
+
+  /* ?d= 가 있으면 그 목록은 코드 없이 바로 연다.
+     · 옛 링크(?d= 만) — 이미 나눠 준 QR 이 그대로 열린다
+     · 새 링크(?d= + ?e=) — 자작·공개 도구는 바로, 교과서·기출이 든 것만 코드로 */
+  var DATA=null;
+  try{
+    var raw=qp("d");
+    if(raw && window.LZString){
+      var json=LZString.decompressFromEncodedURIComponent(raw);
+      if(json) DATA=JSON.parse(json);
+    }
+  }catch(e){ DATA=null; }
+
+  if(DATA){ start(DATA, sealed||null, DATA.k||0); return; }
+
   if(sealed){
-    /* 잠긴 새 링크 — 코드·암호를 넣어야 목록이 풀린다 */
+    /* 고른 게 전부 교과서·기출이라 통째로 잠긴 링크 — 코드·암호를 넣어야 목록이 풀린다 */
     if(!window.LZString || !window.crypto || !crypto.subtle){
       fail('😅 이 브라우저에서는 잠긴 링크를 열 수 없어요.<br>크롬이나 사파리로 다시 열어 주세요.'); return;
     }
@@ -300,16 +360,7 @@ function start(DATA){
       .catch(function(){ fail('😅 잠금을 풀 준비를 하지 못했어요.<br>인터넷 연결을 확인하고 새로고침해 주세요.'); });
     return;
   }
-  /* 예전 링크(?d=) — 이미 나눠 준 QR 을 깨지 않도록 그대로 바로 연다 */
-  var DATA=null;
-  try{
-    var raw=qp("d");
-    if(raw && window.LZString){
-      var json=LZString.decompressFromEncodedURIComponent(raw);
-      if(json) DATA=JSON.parse(json);
-    }
-  }catch(e){ DATA=null; }
-  start(DATA);
+  start(null);
 })();
 </script>
 </body>
