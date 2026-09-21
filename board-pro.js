@@ -13,7 +13,13 @@
 
    ▸ 무엇이 붙어 있나
      펜 · 형광펜 · 지우개 · 선택(판서 끄기) · 색 4종 · 되돌리기 · 판서 지우기 ·
-     타이머 · 번호 뽑기 · 가리개 · 전체화면 · 나가기.
+     크게 보기 · 타이머 · 번호 뽑기 · 가리개 · 전체화면 · 나가기.
+
+   ▸ 크게 보기(🔍 · Z 키 · 그림 누르기)
+     한 화면에 담느라 줄어든 글자와 그림을 **줄이기 전 크기로 따로 띄운다.**
+     슬라이드는 건드리지 않는다 — 덮개만 올라왔다 내려간다.
+     안에서 ➕ ➖ 로 85%~350% 까지 더 키울 수 있고, 넘치면 밀어서 본다.
+     (수업 뒷자리에서 "글자가 안 보인다"는 말이 여기서 나왔다. 2026-09-21)
 
    ▸ menu 한 칸의 형식
      { icon:'📊', title:'개념 슬라이드', desc:'설명',
@@ -233,6 +239,51 @@
     '.bp-ov button{min-height:56px;padding:0 22px;border-radius:14px;background:#1f2836;border:1px solid #2f3b4f;',
     '  font-size:clamp(13px,1.1vw,20px);font-weight:800;color:#eef3fb;cursor:pointer;font-family:inherit}',
 
+    /* ── 크게 보기 ──
+       fitBody() 는 한 장을 한 화면에 담으려고 글자부터 줄인다(compact→tight→tighter).
+       그러다 보면 단계를 다 열은 장은 교실 뒷자리에서 읽힐 크기가 아니게 된다.
+       이 덤개는 지금 보이는 내용을 그대로 복사해 줄이기 전 크기로 다시 보여 준다.
+       슬라이드 자체는 그대로다 — 닫으면 보던 자리로 돌아온다. */
+    '#bp-in .bp-fig{cursor:zoom-in;position:relative}',
+    '#bp-in .bp-fig::after{content:"🔍 크게";position:absolute;right:7px;top:6px;',
+    '  font-size:11px;font-weight:800;color:#9fd2ff;background:rgba(9,13,20,.78);',
+    '  border:1px solid #2f3b4f;border-radius:8px;padding:2px 7px;pointer-events:none}',
+    'body.bp-ink #bp-in .bp-fig{cursor:default}',
+    'body.bp-ink #bp-in .bp-fig::after{display:none}',
+    '#bp-ovz{align-items:stretch;justify-content:flex-start;gap:0;padding:0;background:rgba(5,8,13,.985)}',
+    '#bp-ovz .zhead{display:flex;align-items:center;gap:8px;padding:9px 13px;flex-shrink:0;',
+    '  background:#0d131d;border-bottom:1px solid #2f3b4f}',
+    '#bp-ovz .zttl{flex:1;min-width:0;font-size:clamp(13px,1.3vw,23px);font-weight:900;',
+    '  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+    '#bp-ovz .zpct{min-width:62px;text-align:center;font-weight:900;color:#93a2ba;',
+    '  font-size:clamp(12px,1vw,16px);font-variant-numeric:tabular-nums}',
+    '#bp-ovz button{min-height:48px;min-width:48px;padding:0 14px;font-size:clamp(13px,1vw,17px)}',
+    '#bp-ovz button:disabled{opacity:.42;cursor:default}',
+    /* 밀어서 보는 칸 — 크게 키우면 넘치니 가로·세로 둘 다 굴러야 한다 */
+    '#bp-zwrap{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;touch-action:pan-x pan-y;outline:none;cursor:grab;',
+    '  padding:min(2.2vh,18px) min(2.4vw,26px) 30px}',
+    /* --bpz 를 높이면 글자는 em 으로, 그림은 폭으로 함께 커진다 */
+    '#bp-zin{--bpz:1;display:flex;flex-direction:column;gap:calc(.6em * var(--bpz));',
+    '  font-size:calc(clamp(15px,1.5vw,27px) * var(--bpz));line-height:1.55}',
+    /* justify-content 를 왼쪽으로 돌려놓는다 — 가운데 정렬(.bp-fig 의 기본값)인 채로
+       그림을 키우면 왼쪽으로도 똑같이 삐져나가는데, 그쪽은 굴려서 닿을 수가 없다.
+       (200% 에서 그림 왼쪽 194px 이 화면 밖으로 잘려 안 보였다.) */
+    '#bp-zin .bp-fig{flex:0 0 auto;max-height:none;overflow:visible;',
+    '  align-items:flex-start;justify-content:flex-start}',
+    '#bp-zin .bp-fig > *{flex-shrink:0}',
+    '#bp-zin .bp-fig svg{max-height:none;width:calc(100% * var(--bpz));height:auto}',
+    '#bp-zin .bp-fig img{max-height:none;max-width:none;width:calc(100% * var(--bpz));height:auto}',
+    /* 그림을 <div> 로 감싼 도구가 많다 — 안의 svg 가 이미 배율을 먹었으므로 이 칸은 100% 로 둔다 */
+    '#bp-zin .bp-fig > div{width:100%;min-width:0}',
+    '#bp-zin .bp-cap{font-size:.78em;flex-shrink:0}',
+    '#bp-zin .bp-pts{gap:calc(.42em * var(--bpz));flex-shrink:0}',
+    '#bp-zin .bp-pts li{font-size:1em;line-height:1.55;padding:.5em .72em}',
+    '#bp-zin .bp-ask{font-size:1.06em;padding:.55em .75em}',
+    '#bp-zin .bp-q{font-size:1.1em}',
+    '#bp-zin .bp-opt{font-size:.95em;min-height:0;padding:.5em .65em}',
+    '#bp-zin .bp-exp{font-size:.9em;max-height:none;padding:.6em .8em}',
+    '@media (max-width:640px){#bp-zin .bp-opts{grid-template-columns:1fr}}',
+
     /* ── 메뉴 ── */
     '#bp-menu{position:fixed;inset:0;z-index:99090;overflow-y:auto;padding:26px 20px 40px;',
     '  background:radial-gradient(1200px 700px at 60% -10%,#1a2536,#0a0d13 62%);',
@@ -303,6 +354,7 @@
         '<button type="button" data-a="next" title="다음 (→)">▶</button>' +
       '</div>' +
       '<div id="bp-tools">' +
+        '<button type="button" data-a="zoom" title="크게 보기 (Z)">🔍<i>크게 보기</i></button>' +
         '<button type="button" id="bp-sel"  data-a="sel"  class="on" title="선택 — 판서 끄기 (Esc)">🖱️<i>선택</i></button>' +
         '<button type="button" id="bp-pen"  data-a="pen"  title="펜 (P)">✏️<i>펜</i></button>' +
         '<button type="button" id="bp-hi"   data-a="hi"   title="형광펜">🖍️<i>형광펜</i></button>' +
@@ -403,6 +455,21 @@
         '<div class="sub" id="bp-plog" style="font-size:clamp(12px,1vw,16px)"></div>' +
       '</div>' +
 
+      '<div class="bp-ov" id="bp-ovz">' +
+        '<div class="zhead">' +
+          '<div class="zttl" id="bp-zttl"></div>' +
+          '<button type="button" data-z="-1" title="작게">➖</button>' +
+          '<div class="zpct" id="bp-zpct">100%</div>' +
+          '<button type="button" data-z="1" title="크게">➕</button>' +
+          '<button type="button" data-z="0" title="기본 크기">↺</button>' +
+          '<button type="button" data-close="bp-ovz">✕ 닫기</button>' +
+        '</div>' +
+        /* tabindex — Tab 으로 이 칸에 들어오면 ↓ PageDown 으로도 굴릴 수 있다.
+           열 때 자동으로 초점을 주지는 않는다: 그렇게 했더니 휠 굴리기가 통째로
+           먹통이 되는 것을 실제로 봤다(2026-09-21 시험). 손가락·휠이 먼저다. */
+        '<div id="bp-zwrap" tabindex="0"><div id="bp-zin"></div></div>' +
+      '</div>' +
+
       '<div id="bp-menu"><h1></h1><p></p><div id="bp-grid"></div>' +
         '<button type="button" id="bp-close">← 나가기</button></div>';
     while (extra.firstChild) document.body.appendChild(extra.firstChild);
@@ -443,6 +510,10 @@
   function setTool(t) {
     tool = t;
     pad.classList.toggle('off', t === 'none');
+    /* 판서 중에는 화면 전체가 그리는 면이라 그림을 눌러도 「크게 보기」가 안 열린다
+       (판서 캔버스가 본문을 덮고 있다). 그러니 안내 딱지도 같이 숨긴다 —
+       눌러도 안 되는 딱지가 붙어 있으면 고장난 줄 안다. 도구바 단추는 그대로 쓴다. */
+    document.body.classList.toggle('bp-ink', t !== 'none');
     ['bp-sel', 'bp-pen', 'bp-hi', 'bp-er'].forEach(function (id) {
       var b = $(id); if (b) b.classList.toggle('on',
         (id === 'bp-sel' && t === 'none') || (id === 'bp-pen' && t === 'pen') ||
@@ -535,11 +606,58 @@
     $('bp-bar').addEventListener('click', onBar);
     $('bp-pop').addEventListener('click', onBar);
 
-    /* 본문 — 빈칸만 받는다. 빈 곳을 눌러도 넘어가지 않는다. */
+    /* 본문 — 빈칸과 그림만 받는다. 빈 곳을 눌러도 넘어가지 않는다.
+       그림을 누르면 「크게 보기」가 열린다. 요점 글자는 일부러 뺀다 —
+       그 안에 빈칸이 있어 헛클릭이 생기기 때문이다. 전체를 크게 보는 길은
+       도구바의 [🔍 크게 보기] 와 Z 키다(펜을 켜 둔 동안에는 판서 캔버스가
+       본문을 덮고 있어 그림을 눌러도 안 열린다 — 그때는 도구바를 쓴다). */
     $('bp-body').addEventListener('click', function (e) {
-      var bl = e.target.closest && e.target.closest('.bp-bl');
-      if (bl) bl.classList.add('on');
+      if (!e.target.closest) return;
+      var bl = e.target.closest('.bp-bl');
+      if (bl) { bl.classList.add('on'); return; }
+      if (e.target.closest('.bp-fig')) zoomOpen();
     });
+
+    /* 크게 보기 창 — 배율 단추와, 복사본 안의 빈칸 */
+    $('bp-ovz').addEventListener('click', function (e) {
+      if (!e.target.closest) return;
+      var z = e.target.closest('[data-z]');
+      if (z) { zoomSet(+z.dataset.z === 0 ? ZBASE : zi + (+z.dataset.z)); return; }
+      var bl = e.target.closest('.bp-bl');
+      if (bl && !bl.classList.contains('on')) {
+        bl.classList.add('on');
+        /* 복사본에서 열었으면 밑의 슬라이드도 같이 열어 둔다 —
+           닫았는데 답이 다시 가려져 있으면 수업이 엉킨다. 순서로 짝짓는다. */
+        var zs = $('bp-zin').querySelectorAll('.bp-bl');
+        var os = $('bp-in').querySelectorAll('.bp-bl');
+        for (var k = 0; k < zs.length; k++)
+          if (zs[k] === bl && os[k]) { os[k].classList.add('on'); break; }
+      }
+    });
+
+    /* 끌어서 밀기 — 크게 키우면 그림이 화면보다 넓어지는데, 마우스 휠에는 가로가 없다.
+       손가락(전자칠판)은 브라우저가 알아서 밀어 주므로 마우스일 때만 우리가 민다 —
+       둘 다 밀면 두 배로 움직여 멀미가 난다. 6px 넘게 움직여야 밀기로 치므로
+       빈칸을 누르는 손은 방해받지 않는다. */
+    (function () {
+      var wrap = $('bp-zwrap'), on = false, x0 = 0, y0 = 0, sl = 0, st = 0;
+      wrap.addEventListener('pointerdown', function (e) {
+        if (e.pointerType && e.pointerType !== 'mouse') return;
+        if (e.target.closest && e.target.closest('button,.bp-bl')) return;
+        on = true; x0 = e.clientX; y0 = e.clientY; sl = wrap.scrollLeft; st = wrap.scrollTop;
+      });
+      wrap.addEventListener('pointermove', function (e) {
+        if (!on) return;
+        var mx = e.clientX - x0, my = e.clientY - y0;
+        if (Math.abs(mx) + Math.abs(my) < 6) return;
+        wrap.scrollLeft = sl - mx; wrap.scrollTop = st - my;
+        wrap.style.cursor = 'grabbing';
+        e.preventDefault();
+      });
+      ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (t) {
+        wrap.addEventListener(t, function () { on = false; wrap.style.cursor = ''; });
+      });
+    })();
 
     $('bp-grid').addEventListener('click', function (e) {
       var c = e.target.closest('[data-k]');
@@ -574,6 +692,14 @@
         if (e.key === 'Escape') close();
         return;
       }
+      /* 크게 보기 창이 열려 있으면 그 창의 키만 받는다 —
+         뒤에 가려 있는 슬라이드가 넘어가 버리면 닫았을 때 다른 장이 나온다. */
+      if ($('bp-ovz').classList.contains('on')) {
+        if (e.key === 'Escape' || e.key === 'z' || e.key === 'Z') { e.preventDefault(); $('bp-ovz').classList.remove('on'); }
+        else if (e.key === '+' || e.key === '=') { e.preventDefault(); zoomSet(zi + 1); }
+        else if (e.key === '-' || e.key === '_') { e.preventDefault(); zoomSet(zi - 1); }
+        return;
+      }
       /* 빈칸에 초점이 있으면 Enter·스페이스는 빈칸 여는 데 쓴다 */
       var bl = e.target && e.target.closest && e.target.closest('.bp-bl');
       if (bl && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); bl.classList.add('on'); return; }
@@ -583,6 +709,7 @@
       else if (k === 'f' || k === 'F') { e.preventDefault(); act('full'); }
       else if (k === 'p' || k === 'P') { e.preventDefault(); act('pen'); }
       else if (k === 'c' || k === 'C') { e.preventDefault(); act('clr'); }
+      else if (k === 'z' || k === 'Z') { e.preventDefault(); act('zoom'); }
       else if (k === 'Escape') {
         setTool('none');
         Array.prototype.forEach.call(document.querySelectorAll('.bp-ov'), function (o) { o.classList.remove('on'); });
@@ -607,6 +734,7 @@
     else if (a === 'step-or-next') { if (step < maxStep()) stepUp(); else go(1); }
     else if (a === 'timer') { $('bp-ovt').classList.add('on'); tmPaint(); }
     else if (a === 'pick') { $('bp-ovp').classList.add('on'); pkPaint(); }
+    else if (a === 'zoom') zoomOpen();
     else if (a === 'curtain') {
       var c = $('bp-curtain'); c.classList.toggle('on');
       $('bp-cur').classList.toggle('on', c.classList.contains('on'));
@@ -617,6 +745,46 @@
     }
     else if (a === 'home') menu();
     else if (a === 'more') $('bp-pop').classList.toggle('on');
+  }
+
+  /* ═════════ 크게 보기 ═════════
+     지금 화면에 보이는 칸을 그대로 복사해 덮개에 올린다.
+     복사본이라 슬라이드의 배치·판서는 전혀 건드리지 않는다.
+     아직 안 연 단계(.bp-veil)는 안 올린다 — 정답이 먼저 새면 안 된다.
+     SVG 안의 id 는 그대로 둔다. <use href="#x"> 는 문서에서 앞서 나오는
+     원본을 가리키게 되는데, 둘은 같은 그림이므로 보이는 것은 똑같다. */
+  var ZS = [0.85, 1, 1.25, 1.5, 1.8, 2.2, 2.8, 3.5], ZBASE = 1, zi = ZBASE;
+
+  function zoomSet(k) {
+    zi = clamp(k, 0, ZS.length - 1);
+    $('bp-zin').style.setProperty('--bpz', ZS[zi]);
+    $('bp-zpct').textContent = Math.round(ZS[zi] * 100) + '%';
+    var bs = $('bp-ovz').querySelectorAll('[data-z]');
+    for (var n = 0; n < bs.length; n++) {
+      var d = +bs[n].dataset.z;
+      bs[n].disabled = (d > 0 && zi >= ZS.length - 1) || (d < 0 && zi <= 0);
+    }
+  }
+
+  function zoomFill() {
+    var zin = $('bp-zin'), src = $('bp-in');
+    zin.innerHTML = '';
+    Array.prototype.forEach.call(src.children, function (el) {
+      if (el.classList.contains('bp-veil')) return;
+      zin.appendChild(el.cloneNode(true));
+    });
+    var u = $('bp-u').textContent, t = $('bp-t').textContent;
+    $('bp-zttl').textContent = (u ? u + ' · ' : '') + t;
+  }
+
+  function zoomOpen() {
+    if (mode === 'blank') return;              /* 빈 칠판은 올릴 내용이 없다 */
+    if (!$('bp-in').children.length) return;
+    zoomFill();
+    $('bp-pop').classList.remove('on');
+    $('bp-ovz').classList.add('on');
+    $('bp-zwrap').scrollTop = 0; $('bp-zwrap').scrollLeft = 0;
+    zoomSet(zi);
   }
 
   /* ═════════ 타이머 ═════════ */
@@ -792,6 +960,8 @@
       setBtn(stepLabel(s), nextStage(s) === null);
     }
     fitBody();
+    /* 크게 보기 창이 열린 채 단계가 바뀔 수도 있다 — 복사본도 같이 갱신한다 */
+    if ($('bp-ovz') && $('bp-ovz').classList.contains('on')) zoomFill();
     $('bp-body').scrollTop = 0;
     /* 도구바는 #bp 안이 아니라 형제다(화면 맨 아래 고정). 문서 전체에서 찾는다.
        버튼이 「⋯」 팝업으로 옮겨가 있을 수도 있으므로 더 그렇다. */
