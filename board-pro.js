@@ -27,6 +27,12 @@
        ansq:'퀴즈', anso:['보기'…], ansa:정답번호(0부터), anse:'해설' }
      그림을 직접 만들어야 하면 opts.fig(slide) 로 HTML 을 돌려주면 된다.
 
+   ▸ 퀴즈 보기는 화면에서 섞는다 (2026-09-21)
+     원고는 정답이 ②에 몰려 있었다(1,463문항 중 48%). 교실에서 금방 들킨다.
+     원고는 그대로 두고 **보여 줄 때만** 섞는다. 같은 문항은 언제 열어도 같은 순서다(내용으로 정한 순서).
+     해설·보기가 번호를 말하면(①·2번·위의 것 모두 …) 섞으면 틀리므로 원래 순서대로 둔다.
+     특정 장을 섞지 않으려면 슬라이드에 keep:true.
+
    ▸ 요점 속 {{답}} 은 빈칸이다
      처음에는 글자가 가려져 있고, 그 자리를 눌러야 답이 드러난다.
      빈칸을 눌러도 슬라이드는 넘어가지 않는다.
@@ -699,6 +705,21 @@
     if (s.ansq || s.anse) out.push(3);
     return out;
   }
+
+  /* 퀴즈 보기를 보여 줄 순서 — 원래 번호의 배열. 예: [2,0,3,1] 이면 화면 1번 = 원고 3번.
+     난수가 아니라 문항 글자로 정해서, 같은 문항은 수업마다 같은 순서로 나온다. */
+  var 번호말함 = /[①②③④⑤]|[1-5]\s*번|보기\s*[1-5]|위의|위 보기|이상 모두/;
+  function optOrder(s) {
+    var o = s.anso || [], idx = o.map(function (_, k) { return k; });
+    if (s.keep || o.length < 3 || 번호말함.test((s.anse || '') + '|' + o.join('|'))) return idx;
+    var h = 2166136261, t = (s.ansq || '') + '|' + o.join('|');
+    for (var i = 0; i < t.length; i++) { h ^= t.charCodeAt(i); h = Math.imul(h, 16777619); }
+    for (var k = idx.length - 1; k > 0; k--) {
+      h ^= h << 13; h ^= h >>> 17; h ^= h << 5;            // xorshift — 다음 수
+      var j = (h >>> 0) % (k + 1), tmp = idx[k]; idx[k] = idx[j]; idx[j] = tmp;
+    }
+    return idx;
+  }
   /* 지금 단계에서 [다음]이 열게 될 단계. 더 열 것이 없으면 null */
   function nextStage(s) {
     var st = stages(s);
@@ -763,9 +784,9 @@
         (s.ask ? '<div class="bp-ask ' + (step < 1 ? 'bp-veil' : '') + '">💭 ' + s.ask + '</div>' : '') +
         (s.ansq ? '<div class="' + (step < 2 ? 'bp-veil' : '') + '" style="flex-shrink:0">' +
           '<div class="bp-q" style="margin-bottom:9px">🎯 ' + s.ansq + '</div>' +
-          '<div class="bp-opts">' + (s.anso || []).map(function (o, k) {
+          '<div class="bp-opts">' + optOrder(s).map(function (k, n) {
             return '<div class="bp-opt ' + (step >= 3 ? (k === s.ansa ? 'ok' : 'dim') : '') + '">' +
-                   '<span class="n">' + (k + 1) + '</span><span>' + o + '</span></div>';
+                   '<span class="n">' + (n + 1) + '</span><span>' + s.anso[k] + '</span></div>';
           }).join('') + '</div></div>' : '') +
         (s.anse ? '<div class="bp-exp ' + (step < 3 ? 'bp-veil' : '') + '">' + s.anse + '</div>' : '');
       setBtn(stepLabel(s), nextStage(s) === null);
