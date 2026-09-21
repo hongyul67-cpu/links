@@ -784,7 +784,10 @@
     $('bp-pop').classList.remove('on');
     $('bp-ovz').classList.add('on');
     $('bp-zwrap').scrollTop = 0; $('bp-zwrap').scrollLeft = 0;
-    zoomSet(zi);
+    /* 열 때는 언제나 100% 다 — 직전에 쓰던 배율을 물고 오지 않는다(2026-09-21 지시).
+       앞 장에서 350% 로 봤다고 다음 장이 350% 로 열리면 글자만 커다랗게 걸려 있고
+       무슨 장인지 안 보인다. 더 키우는 것은 그 자리에서 ➕ 한 번이면 된다. */
+    zoomSet(ZBASE);
   }
 
   /* ═════════ 타이머 ═════════ */
