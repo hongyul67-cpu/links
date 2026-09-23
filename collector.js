@@ -275,6 +275,7 @@
   }
 
   var LS_KEY = 'rc_student';   // 마지막 반/번호 기억
+  var LS_AGREE = 'rc_agree_v1'; // 개인정보 수집 동의(이 기기)
 
   // ── 스타일 주입 ─────────────────────────────
   var css = '' +
@@ -301,6 +302,13 @@
     '.rc-selfb button{flex:1;padding:8px;font-size:14px;font-weight:700;border:1px solid #c7d2fe;' +
       'background:#fff;color:#3730a3;border-radius:8px;cursor:pointer}' +
     '.rc-selfb button.on{background:#6366f1;color:#fff;border-color:#6366f1}' +
+    '.rc-agree{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:9px 11px;margin-bottom:14px;font-size:13px;color:#334155}' +
+    '.rc-agree label{display:flex;gap:8px;align-items:center;cursor:pointer;font-weight:600}' +
+    '.rc-agree input{width:18px;height:18px;flex:0 0 18px;accent-color:#6366f1;margin:0}' +
+    '.rc-agree.need{border-color:#dc2626;background:#fef2f2}' +
+    '.rc-agree details{margin-top:6px}' +
+    '.rc-agree summary{cursor:pointer;color:#6366f1;font-size:12px}' +
+    '.rc-agree ul{margin:6px 0 0;padding-left:18px;font-size:12px;line-height:1.65;color:#475569}' +
     '#rc-selfnote{width:100%;box-sizing:border-box;margin-top:8px;padding:9px 10px;font-size:13px;' +
       'border:1px solid #c7d2fe;border-radius:8px;background:#fff;color:#0f172a}';
 
@@ -438,6 +446,26 @@
 
     var memoField = '';
 
+    /* 개인정보 수집·이용 동의 — 한 줄 체크박스, 자세한 내용은 눌러서 펼친다.
+       한 번 동의하면 이 기기에서는 체크된 채로 뜬다(그래도 눈에는 보이게 둔다). */
+    var agreed = false;
+    try { agreed = localStorage.getItem(LS_AGREE) === '1'; } catch (e) {}
+    var who = ['반', '번호'];
+    if (CFG.askName) who.unshift('이름');
+    if (CFG.askGrade) who.push('학년');
+    if (CFG.askDept) who.push('학과');
+    var agreeField =
+      '<div class="rc-agree" id="rc-agree-box">' +
+        '<label><input type="checkbox" id="rc-agree"' + (agreed ? ' checked' : '') + '>' +
+        '<span>개인정보 수집·이용에 동의합니다 <span style="color:#dc2626">(필수)</span></span></label>' +
+        '<details><summary>무엇을 모으나요?</summary><ul>' +
+          '<li><b>항목</b> — ' + who.join('·') + ', 학습 결과(점수·틀린 문항·걸린 시간), 스스로 평가, 기기 종류</li>' +
+          '<li><b>목적</b> — 수업 중 학습 상태 확인과 평가·학교생활기록부 기록 참고</li>' +
+          '<li><b>보관</b> — 담당 선생님의 구글 시트에만 저장, 해당 학년도가 끝나면 지웁니다</li>' +
+          '<li><b>거부</b> — 동의하지 않아도 학습은 그대로 할 수 있어요. 결과 제출만 되지 않습니다</li>' +
+        '</ul></details>' +
+      '</div>';
+
     /* 자기평가 — 루브릭이 있으면 "스스로 보기" 한 줄이 뜬다(선택 사항).
        세특은 관찰 기록이라, 학생이 스스로 어떻게 봤는지가 교사의 관찰과 함께 남아야 쓸모가 있다. */
     var selfPick = '';
@@ -458,6 +486,7 @@
             'placeholder="번호" value="' + (last.num ? esc(last.num) : '') + '"></div>' +
         '</div>' +
         memoField +
+        agreeField +
         '<div class="rc-btns">' +
           '<button class="rc-btn rc-cancel" id="rc-cancel">취소</button>' +
           '<button class="rc-btn rc-ok" id="rc-ok">제출</button>' +
@@ -475,6 +504,10 @@
     var elMemo = ov.querySelector('#rc-memo');
     var elOk = ov.querySelector('#rc-ok');
     var elMsg = ov.querySelector('#rc-msg');
+    ov.querySelector('#rc-agree').addEventListener('change', function () {
+      ov.querySelector('#rc-agree-box').className = 'rc-agree';
+      if (this.checked && /동의/.test(elMsg.textContent)) { elMsg.className = 'rc-msg'; elMsg.textContent = ''; }
+    });
     if (elMemo) {
       var elCnt = ov.querySelector('#rc-cnt');
       elMemo.addEventListener('input', function () { if (elCnt) elCnt.textContent = elMemo.value.length; });
@@ -521,6 +554,13 @@
       if (CFG.askGrade && !gradeV) { elMsg.className = 'rc-msg err'; elMsg.textContent = '학년을 입력하세요.'; elGrade.focus(); return; }
       if (CFG.askDept && !deptV) { elMsg.className = 'rc-msg err'; elMsg.textContent = '학과를 입력하세요.'; elDept.focus(); return; }
       if (!numV) { elMsg.className = 'rc-msg err'; elMsg.textContent = '번호를 입력하세요.'; elNum.focus(); return; }
+      var elAgree = ov.querySelector('#rc-agree');
+      if (elAgree && !elAgree.checked) {
+        ov.querySelector('#rc-agree-box').className = 'rc-agree need';
+        elMsg.className = 'rc-msg err'; elMsg.textContent = '개인정보 수집·이용에 동의해야 제출할 수 있어요.';
+        return;
+      }
+      try { localStorage.setItem(LS_AGREE, '1'); } catch (e) {}
       if (!CFG.endpoint) { elMsg.className = 'rc-msg err'; elMsg.textContent = '설정 오류: endpoint가 없습니다.'; return; }
 
       elOk.disabled = true;
