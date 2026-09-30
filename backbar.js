@@ -158,8 +158,36 @@
     b.style.bottom = up + 'px';
   }
 
+  /* 폰 폭(600px 이하)에서는 카드가 화면을 꽉 채워, 구석에 떠 있는 공용 단추들이 본문 글자를 덮는다.
+     아래로 읽어 내려가는 동안은 단추를 숨기고(눌리지도 않게), 조금이라도 위로 올리거나
+     맨 위·맨 아래에 닿으면 곧바로 다시 보인다. 넓은 화면은 아무것도 바뀌지 않는다. */
+  var FLOATS = ['#bb-btn', '.tr-btn', '#rb-btn', '.cm-launch', '#fxSnd', '#rk-badge'];
+  function autoHide() {
+    if (document.getElementById('bb-hide-css')) return;
+    var st = document.createElement('style');
+    st.id = 'bb-hide-css';
+    st.textContent = '@media screen and (max-width:600px){'
+      + FLOATS.map(function (s) { return 'html.bb-hide ' + s; }).join(',')
+      + '{opacity:0!important;pointer-events:none!important;transition:opacity .2s!important}}';
+    document.head.appendChild(st);
+    var root = document.documentElement, lastY = window.scrollY, acc = 0;
+    function show() { acc = 0; root.classList.remove('bb-hide'); }
+    window.addEventListener('scroll', function () {
+      var y = window.scrollY, dy = y - lastY;
+      lastY = y;
+      if (window.innerWidth > 600) return show();
+      var end = document.documentElement.scrollHeight - window.innerHeight;
+      if (y < 60 || y > end - 80) return show();
+      acc = (dy > 0) === (acc > 0) ? acc + dy : dy;   /* 방향이 바뀌면 새로 센다 */
+      if (acc > 24) root.classList.add('bb-hide');
+      else if (acc < -24) show();
+    }, { passive: true });
+    window.addEventListener('resize', function () { if (window.innerWidth > 600) show(); });
+  }
+
   function start() {
     paint();
+    autoHide();
     /* 도구 안에서 화면이 바뀌면 문구도 따라 바뀌게 — 가볍게 지켜본다 */
     try {
       var mo = new MutationObserver(function () {
